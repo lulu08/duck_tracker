@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {{ page_title }} - {{ block.super }}
+{% endblock title %}
+{% block content %}
+  <div class="py-5">
+    {% if flock %}
+      <a href="{% url 'ducks:flock-detail' flock.id %}"
+         class="btn btn-link text-decoration-none mb-4">
+        <i class="bi bi-chevron-left"></i> Back to {{ flock.title }}
+      </a>
+    {% else %}
+      <a href="{% url 'ducks:flock-list' %}"
+         class="btn btn-link text-decoration-none mb-4">
+        <i class="bi bi-chevron-left"></i> Back to Flocks
+      </a>
+    {% endif %}
+    <div class="card shadow-sm border-0 mb-5">
+      <div class="card-body p-5">
+        <h1 class="mb-3">{{ page_title }}</h1>
+        {% if flock %}
+          <p class="text-muted mb-4">
+            <strong>Flock:</strong> {{ flock.title }}
+          </p>
+        {% endif %}
+        <form method="post">
+          {% csrf_token %}
+          {% if flock %}<input type="hidden" name="flock" value="{{ flock.pk }}" />{% endif %}
+          <div class="form-group mb-4">
+            {% for field in form %}
+              <div class="mb-3">
+                {% include 'form_field.html' with field=field %}
+                {% for error in field.errors %}
+                  <div class="alert alert-danger alert-dismissible fade show mt-2 mb-0"
+                       role="alert">
+                    {{ error }}
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="bi bi-check-circle"></i> Save Stats
+            </button>
+            {% if flock %}
+              <a href="{% url 'ducks:flock-detail' flock.id %}"
+                 class="btn btn-secondary btn-lg">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+            {% else %}
+              <a href="{% url 'ducks:flock-list' %}" class="btn btn-secondary btn-lg">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+<script>
+  // Prevent duplicate submits (e.g., double-click or impatient users).
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[method="post"]');
+    if (!form) return;
+    form.addEventListener('submit', function(e) {
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+      }
+      // optional console log for quick debugging
+      console.log('Stats form submitted, disabling submit button');
+    });
+  });
+</script>

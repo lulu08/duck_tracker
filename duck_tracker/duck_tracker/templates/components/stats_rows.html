@@ -1,0 +1,71 @@
+{% load humanize %}
+
+{% for stats in stats %}
+  <tr class="{% if flock.culled_date %}hover-row text-muted{% else %}cursor-pointer hover-row{% endif %}">
+    <td class="fw-bold">{{ stats.day|intcomma }}</td>
+    <td>{{ stats.date|date:"M d, Y" }}</td>
+    <td>{{ stats.harvested|intcomma }}</td>
+    <td>
+      {% if stats.percentage|floatformat:2 %}
+        <span class="badge bg-info">{{ stats.percentage|floatformat:2 }}%</span>
+      {% else %}
+        <span class="text-muted">—</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if stats.notes %}
+        <!-- Create a modal that will show the notes -->
+        <button type="button"
+                class="btn btn-link p-0 text-decoration-none"
+                data-bs-toggle="modal"
+                data-bs-target="#notesModal"
+                data-notes="{{ stats.notes|escapejs }}"
+                title="View notes">
+          <i class="bi bi-journal-text"></i>
+        </button>
+      {% else %}
+        <span class="text-muted">—</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if stats.mortality %}
+        <span class="badge bg-warning">{{ stats.mortality }}</span>
+      {% else %}
+        <span class="text-muted">—</span>
+      {% endif %}
+    </td>
+    <td>{{ stats.feed_consumed }}</td>
+    <td class="text-start">
+      {% if stats.harvested_delta is None %}
+        <span class="text-muted">—</span>
+      {% else %}
+        {% if stats.harvested_delta > 0 %}
+          <span class="text-success">+{{ stats.harvested_delta }}</span>
+        {% elif stats.harvested_delta < 0 %}
+          <span class="text-danger">{{ stats.harvested_delta }}</span>
+        {% else %}
+          <span class="text-secondary">0</span>
+        {% endif %}
+        {% if stats.harvested_delta_pct %}
+          <small class="text-muted">({{ stats.harvested_delta_pct|floatformat:1 }}%)</small>
+        {% endif %}
+      {% endif %}
+    </td>
+    <td colspan="8" class="text-start">
+      <button class="btn btn-outline-secondary"
+              {% if not flock.is_culled %}onclick="window.location.href='{% url 'ducks:stats-edit' stats.id %}?flock={{ flock.id }}';" role="button"{% endif %}>
+        <i class="bi bi-arrow-right"></i>
+      </button>
+    </td>
+  </tr>
+{% empty %}
+  <tr>
+    <td colspan="7" class="text-center text-muted py-4">
+      <i class="bi bi-inbox mb-3 d-block icon-muted-lg"></i>
+      No stats recorded yet.
+      {% if flock.culled_date %}
+        <span class="text-muted">This flock has been culled; new entries are disabled.</span>
+      {% endif %}
+    </td>
+  </tr>
+{% endfor %}

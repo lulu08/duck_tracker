@@ -1,0 +1,36 @@
+<!-- Loading Overlay -->
+<div id="loadingOverlay"
+     class="position-fixed top-0 start-0 w-100 h-100 d-none loading-overlay">
+  <div class="d-flex flex-column justify-content-center align-items-center h-100">
+    <div class="spinner-border text-primary mb-3" role="status"></div>
+    <strong>Loading, please wait…</strong>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('loadingOverlay');
+    if (!overlay) return;
+
+    // Link clicks
+    document.body.addEventListener('click', (event) => {
+      const link = event.target.closest('a');
+      if (!link) return;
+
+      if (link.hasAttribute('data-no-loader')) return;
+      if (link.target === '_blank') return;
+      if (link.href.startsWith('#')) return;
+
+      overlay.classList.remove('d-none');
+    });
+
+    // Form submits
+    document.body.addEventListener('submit', (event) => {
+      const form = event.target;
+      if (!form) return;
+
+      if (form.hasAttribute('data-no-loader')) return;
+
+      overlay.classList.remove('d-none');
+    });
+  });
+</script>

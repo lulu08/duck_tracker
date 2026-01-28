@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+{% load constants_tags %}
+
+{% block title %}
+  Flock {{ flock }} - {{ block.super }}
+{% endblock title %}
+{% block content %}
+  <div class="py-5">
+    <!-- Back Button -->
+    <a href="{% url 'ducks:flock-list' %}"
+       class="btn btn-link text-decoration-none mb-4">
+      <i class="bi bi-chevron-left"></i> Back to Flocks
+    </a>
+    <!-- Flock Header Card -->
+    <section id="flock-card" class="card shadow-sm border-0 mb-5">
+      <div class="card-body p-5">
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <h1 class="card-title mb-3">{{ flock.title }}</h1>
+            <div class="mb-3">
+              <span class="badge bg-info">{{ flock.number_of_ducks }} ducks</span>
+              {% if flock.culled_date %}
+                <span class="badge bg-secondary">Culled</span>
+              {% else %}
+                <span class="badge bg-success">Active</span>
+              {% endif %}
+            </div>
+            <p class="text-muted mb-2">
+              <i class="bi bi-calendar-event"></i>
+              Started: <strong>{{ flock.started_date|date:"F d, Y" }}</strong>
+            </p>
+            {% if flock.culled_date %}
+              <p class="text-muted mb-0">
+                <i class="bi bi-check-circle"></i>
+                Culled: <strong>{{ flock.culled_date|date:"F d, Y" }}</strong>
+              </p>
+            {% endif %}
+            {% if flock.description %}
+              <hr />
+              <p class="text-muted mb-0">{{ flock.description }}</p>
+            {% endif %}
+          </div>
+          <div class="col-md-4 text-end">
+            <a href="{% url 'ducks:flock-edit' flock.id %}"
+               class="btn btn-warning mb-md-1">
+              <i class="bi bi-pencil"></i> Edit Flock
+            </a>
+            <a href="{% url 'ducks:flock-delete' flock.id %}" class="btn btn-danger">
+              <i class="bi bi-trash"></i> Delete
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Stats Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="mb-0">Performance Stats</h3>
+      {% if flock.is_culled %}
+        <span class="text-muted">Flock is culled; no new stats can be added.</span>
+      {% else %}
+        <a href="{% url 'ducks:stats-add' %}?flock={{ flock.id }}"
+           class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i> Add Stats Entry
+        </a>
+      {% endif %}
+    </div>
+    <!-- Import Export Form -->
+    <div id="import-export-form"
+         class="d-flex gap-2 align-items-center flex-wrap justify-content-between mb-4">
+      <!-- EXPORT -->
+      <form method="post"
+            action="{% url 'ducks:flock-export' flock.id %}"
+            data-no-loader
+            class="d-flex gap-2 align-items-center">
+        {% csrf_token %}
+        <!-- Force CSV format -->
+        <input type="hidden" name="format" value="0" />
+        <input type="hidden" name="day" value="{{ request.GET.day }}" />
+        <input type="hidden" name="start_date" value="{{ request.GET.start_date }}" />
+        <input type="hidden" name="end_date" value="{{ request.GET.end_date }}" />
+        <button type="submit" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-download"></i> Export
+        </button>
+      </form>
+      <!-- IMPORT -->
+      {% if not flock.is_culled %}
+        <a href="{% url 'ducks:stats-import-template' flock.id %}"
+           class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-upload"></i> Import
+        </a>
+      {% endif %}
+    </div>
+    <!-- Filters Form -->
+    <section id="filter-section" class="mb-4">
+      <form method="get" action="#filter-section" class="row g-3 align-items-end">
+        <!-- Start Date -->
+        <div class="col-auto">
+          <label for="start_date" class="form-label">Start Date</label>
+          <input type="date"
+                 class="form-control"
+                 id="start_date"
+                 name="start_date"
+                 min="{{ min_date|date:'Y-m-d' }}"
+                 max="{{ max_date|date:'Y-m-d' }}"
+                 value="{{ request.GET.start_date }}"
+                 {% if request.GET.day %}disabled{% endif %} />
+        </div>
+        <!-- End Date -->
+        <div class="col-auto">
+          <label for="end_date" class="form-label">End Date</label>
+          <input type="date"
+                 class="form-control"
+                 id="end_date"
+                 name="end_date"
+                 min="{{ min_date|date:'Y-m-d' }}"
+                 max="{{ max_date|date:'Y-m-d' }}"
+                 value="{{ request.GET.end_date }}"
+                 {% if request.GET.day %}disabled{% endif %} />
+        </div>
+        <!-- Day -->
+        <div class="col-auto">
+          <label for="day" class="form-label">Day (up to)</label>
+          <input type="number"
+                 class="form-control"
+                 id="day"
+                 name="day"
+                 min="1"
+                 value="{% if has_date_filter %}{% else %}{{ request.GET.day }}{% endif %}"
+                 {% if has_date_filter %}disabled{% endif %} />
+        </div>
+        <!-- clear filters button -->
+        <div class="col-auto">
+          <a href="{% url 'ducks:flock-detail' flock.id %}#filter-section"
+             class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle"></i> Clear Filters
+          </a>
+        </div>
+        <!-- Submit -->
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-funnel"></i> Apply Filters
+          </button>
+        </div>
+      </form>
+    </section>
+    <!-- Showing Aggregate Filtered Result -->
+    {% include 'components/flock_info_card.html' with flock=aggregates card_id="card-info{{ flock.id }}" %}
+    <!-- Chart -->
+    {% if flock_stats %}
+      <section id="chart-tab" class="card shadow-sm border-0 mb-5">
+        <div class="card-body p-4">
+          <!-- Tabs -->
+          <ul class="nav nav-tabs mb-4" id="statsChartTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active"
+                      id="harvested-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#harvested-pane"
+                      type="button"
+                      role="tab">
+                <i class="bi bi-graph-up"></i> Harvested
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link"
+                      id="percentage-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#percentage-pane"
+                      type="button"
+                      role="tab">
+                <i class="bi bi-percent"></i> Percentage
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link"
+                      id="mortality-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#mortality-pane"
+                      type="button"
+                      role="tab">
+                <i class="bi bi-heartbreak"></i> Mortality
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link"
+                      id="feeds-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#feeds-pane"
+                      type="button"
+                      role="tab">
+                <i class="bi bi-basket"></i> Feeds
+              </button>
+            </li>
+          </ul>
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <!-- Harvested Chart -->
+            <div class="tab-pane fade show active" id="harvested-pane" role="tabpanel">
+              <div class="chart-container">
+                <canvas id="harvestedChart"></canvas>
+              </div>
+            </div>
+            <!-- Percentage Chart -->
+            <div class="tab-pane fade" id="percentage-pane" role="tabpanel">
+              <div class="chart-container">
+                <canvas id="percentageChart"></canvas>
+              </div>
+            </div>
+            <!-- Mortality Chart -->
+            <div class="tab-pane fade" id="mortality-pane" role="tabpanel">
+              <div class="chart-container">
+                <canvas id="mortalityChart"></canvas>
+              </div>
+            </div>
+            <!-- Feeds Chart -->
+            <div class="tab-pane fade" id="feeds-pane" role="tabpanel">
+              <div class="chart-container">
+                <canvas id="feedsChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Pass flock_stats safely to JS -->
+      {{ flock_stats_json|json_script:"flockStatsData" }}
+    {% endif %}
+    <!-- Stats Table -->
+    <section id="stats-table" class="card shadow-sm border-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light border-top-0">
+            <tr>
+              <th>Day</th>
+              <th>Date</th>
+              <th>Harvested</th>
+              <th>Percentage</th>
+              <th>Notes</th>
+              <th>Mortality</th>
+              <th>Feed</th>
+              <th>Inc/Dec</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="stats-body">
+            {% include "components/stats_rows.html" with stats=stats %}
+          </tbody>
+        </table>
+        <!-- Pagination -->
+        <div id="loading" class="text-center py-3 d-none">
+          <div class="spinner-border text-primary"></div>
+        </div>
+        <div id="scroll-sentinel"></div>
+      </div>
+    </section>
+    {% block modal %}
+      <!-- Notes Modal -->
+      <div class="modal fade"
+           id="notesModal"
+           tabindex="-1"
+           aria-labelledby="notesModalLabel"
+           aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="notesModalLabel">Notes</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p id="notesModalBody" class="mb-0 text-wrap"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endblock modal %}
+{% endblock content %}
+{% block inline_javascript %}
+  {{ block.super }}
+  <!-- Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script>
+    // Clear Filters Button
+    const dayInput = document.getElementById('day');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+
+    dayInput?.addEventListener('input', () => {
+      if (dayInput.value) {
+        startDate.value = '';
+        endDate.value = '';
+      }
+    });
+
+    // If start date already exists (page reload with GET)
+    if (startDateInput.value) {
+      endDateInput.min = startDateInput.value;
+    }
+
+    startDateInput?.addEventListener('change', () => {
+      dayInput.value = '';
+
+      if (startDateInput.value) {
+        endDateInput.min = startDateInput.value;
+
+        // Clear end date if it becomes invalid
+        if (endDateInput.value && endDateInput.value < startDateInput.value) {
+          endDateInput.value = "";
+        }
+      } else {
+        // Reset to global minimum if start date cleared
+        endDateInput.min = "{{ min_date|date:'Y-m-d' }}";
+      }
+    });
+
+    endDateInput?.addEventListener('change', () => {
+      dayInput.value = '';
+
+    });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const charts = {}; // store chart instances
+
+      function renderChart(id, config) {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        if (charts[id]) charts[id].destroy();
+        charts[id] = new Chart(canvas, config);
+      }
+
+      // Parse JSON safely from template
+      const flockStats = JSON.parse(document.getElementById('flockStatsData').textContent);
+      const labels = flockStats.map(s => {
+        const date = new Date(s.date); // convert string to Date
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        });
+      });
+
+      const harvestedData = flockStats.map(s => s.harvested || 0);
+      const percentageData = flockStats.map(s => s.percentage || 0);
+      const mortalityData = flockStats.map(s => s.mortality || 0);
+      const feedData = flockStats.map(s => s.feed_consumed || 0);
+
+      renderChart('harvestedChart', {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Harvested',
+            data: harvestedData,
+            borderColor: 'blue',
+            backgroundColor: 'rgba(54,162,235,0.25)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      renderChart('percentageChart', {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Production %',
+            data: percentageData,
+            borderColor: 'orange',
+            backgroundColor: 'rgba(255,206,86,0.25)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+
+      renderChart('mortalityChart', {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Mortality',
+            data: mortalityData,
+            backgroundColor: 'rgba(220,53,69,0.65)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      renderChart('feedsChart', {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Feed Consumed',
+            data: feedData,
+            borderColor: 'green',
+            backgroundColor: 'rgba(25,135,84,0.25)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // --- Infinite Scroll ---
+      let page = 2,
+        loading = false,
+        hasNext = true;
+      const sentinel = document.getElementById("scroll-sentinel");
+      const loadingIndicator = document.getElementById("loading");
+      const statsBody = document.getElementById("stats-body");
+
+      const observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && !loading && hasNext) loadMore();
+      }, {
+        threshold: 1
+      });
+
+      observer.observe(sentinel);
+
+      function loadMore() {
+        loading = true;
+        loadingIndicator.classList.remove("d-none");
+        const params = new URLSearchParams(window.location.search);
+        params.set("page", page);
+
+        fetch(`?${params.toString()}`, {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          })
+          .then(res => res.json())
+          .then(data => {
+            statsBody.insertAdjacentHTML("beforeend", data.html);
+            hasNext = data.has_next;
+            page++;
+          })
+          .finally(() => {
+            loading = false;
+            loadingIndicator.classList.add("d-none");
+          });
+      }
+    });
+  </script>
+{% endblock inline_javascript %}

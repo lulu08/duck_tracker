@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% load humanize %}
+{% load constants_tags %}
+
+{% block title %}
+  Flock List - {{ block.super }}
+{% endblock title %}
+{% block content %}
+  <div class="py-5">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+      <div>
+        <h1 class="mb-2">My Flocks</h1>
+        <p class="text-muted">Manage and track all your duck flocks</p>
+      </div>
+      <a href="{% url 'ducks:flock-add' %}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-circle"></i> Add New Flock
+      </a>
+    </div>
+    <!-- Filter Controls -->
+    <div class="mb-4">
+      <form method="get" class="d-flex gap-2">
+        <!-- NOTE: Watch out for this params exception!!! -->
+        {% for key, value in request.GET.items %}
+          {% if key != 'is_culled' %}<input type="hidden" name="{{ key }}" value="{{ value }}" />{% endif %}
+        {% endfor %}
+        <button type="submit"
+                name="is_culled"
+                value="all"
+                class="btn btn-outline-primary btn-sm {% if not request.GET.is_culled %}active{% endif %}">
+          All
+        </button>
+        <button type="submit"
+                name="is_culled"
+                value="false"
+                class="btn btn-outline-primary btn-sm {% if request.GET.is_culled == 'false' %}active{% endif %}">
+          Active
+        </button>
+        <button type="submit"
+                name="is_culled"
+                value="true"
+                class="btn btn-outline-secondary btn-sm {% if request.GET.is_culled == 'true' %}active{% endif %}">
+          Culled
+        </button>
+      </form>
+    </div>
+    {% comment %}
+    We will use a "show_chart" GET parameter. If it's 1, chart is open; if 0 or missing, chart is collapsed.
+    {% endcomment %}
+    {% with show_chart=request.GET.show_chart|default:"0" %}
+      <!-- Toggle Chart Button -->
+      <div class="mb-3">
+        <a href="?{% if request.GET.is_culled %}is_culled={{ request.GET.is_culled }}&{% endif %}{% if days %}days={{ days }}&{% endif %}show_chart={% if show_chart == '1' %}0{% else %}1{% endif %}"
+           class="btn btn-outline-secondary btn-sm">
+          {% if show_chart == '1' %}
+            <i class="bi bi-arrows-angle-contract"></i> Hide Chart & Days Filter
+          {% else %}
+            <i class="bi bi-arrows-angle-expand"></i> Show Chart & Days Filter
+          {% endif %}
+        </a>
+      </div>
+      <!-- Collapsible Section -->
+      <div class="collapse {% if show_chart == '1' %}show{% endif %}"
+           id="chartSection">
+        <!-- Compare Days Form -->
+        <form method="get" class="row g-2 align-items-end mb-4">
+          <!-- NOTE: Watch out for this params exception!!! -->
+          {% for key, value in request.GET.items %}
+            {% if key != 'days' or key != 'show_chart' %}<input type="hidden" name="{{ key }}" value="{{ value }}" />{% endif %}
+          {% endfor %}
+          <div class="col-auto">
+            <label class="form-label mb-1 small">Compare Days</label>
+            <input type="number"
+                   name="days"
+                   class="form-control form-control-sm"
+                   min="1"
+                   value="{{ days }}" />
+          </div>
+          <div class="col-auto">
+            <button type="submit" class="btn btn-outline-primary btn-sm">Update Chart</button>
+          </div>
+        </form>
+        <!-- Compare Chart -->
+        <section class="card shadow-sm border-0 mb-5">
+          <div class="card-body">
+            <h5 class="mb-3">Flock Comparison (First {{ days }} Days)</h5>
+            <canvas id="flockComparisonChart" height="120"></canvas>
+          </div>
+        </section>
+      </div>
+    {% endwith %}
+    <!-- Flocks Grid -->
+    {% if flocks %}
+      <div class="row g-4">
+        {% for flock in flocks %}
+          <div class="col-lg-4 col-md-6 col-sm-12">
+            <a href="{% url 'ducks:flock-detail' flock.id %}"
+               class="text-decoration-none">
+              <div class="card h-100 shadow-sm border-0 transition-all hover-lift">
+                <div class="card-body p-4">
+                  <!-- Flock Title -->
+                  <h5 class="card-title mb-3 text-dark fw-bold">{{ flock.title }}</h5>
+                  <!-- Flock Details -->
+                  <div class="mb-3">
+                    <p class="mb-2">
+                      <span class="badge bg-info">{{ flock.number_of_ducks }} ducks</span>
+                    </p>
+                    <p class="text-muted small mb-1">
+                      <i class="bi bi-calendar-event"></i>
+                      Started: <strong>{{ flock.started_date|date:"M d, Y" }}</strong>
+                    </p>
+                    {% if flock.is_culled %}
+                      <p class="text-muted small">
+                        <i class="bi bi-check-circle"></i>
+                        Culled: <strong>{{ flock.culled_date|date:"M d, Y" }}</strong>
+                      </p>
+                    {% else %}
+                      <p class="text-success small">
+                        <i class="bi bi-circle-fill"></i>
+                        <strong>Active</strong>
+                      </p>
+                    {% endif %}
+                  </div>
+                  <!-- Description Preview -->
+                  {% if flock.description %}
+                    <p class="card-text text-muted small mb-0 truncate-preview">{{ flock.description|truncatewords:15 }}</p>
+                  {% endif %}
+                  <!-- Mini Aggregate Info Row -->
+                  <div class="row g-2 mb-2 text-secondary">
+                    {% if flock.total_harvested %}
+                      <div class="col-6">
+                        <small>{% agg_label "total_harvested" %}</small>
+                        <p class="fw-semibold mb-0 count-number"
+                           data-value="{{ flock.total_harvested|default:0 }}">{{ flock.total_harvested|intcomma }}</p>
+                      </div>
+                    {% endif %}
+                    {% if flock.average_percentage %}
+                      <div class="col-6">
+                        <small>{% agg_label "average_percentage" %}</small>
+                        <p class="fw-semibold mb-0 ">{{ flock.average_percentage|floatformat:2 }}%</p>
+                      </div>
+                    {% endif %}
+                  </div>
+                  <!-- See More -->
+                  <div class="mt-3">
+                    <span class="text-primary fw-semibold small">
+                      <i class="bi bi-arrow-right-circle"></i> See More
+                    </span>
+                  </div>
+                </div>
+                <!-- Card Footer with Stats -->
+                <div class="card-footer bg-light border-top-0 p-3">
+                  <small class="text-muted">
+                    <i class="bi bi-graph-up"></i>
+                    <strong>{{ flock.stats.count }}</strong> stat entries
+                  </small>
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+      <!-- Empty State -->
+    {% else %}
+      <div class="text-center py-5">
+        <div class="mb-4">
+          <i class="bi bi-inbox icon-muted-lg"></i>
+        </div>
+        <h4 class="text-muted mb-3">No Flocks Yet</h4>
+      </div>
+    {% endif %}
+  </div>
+  {{ chart_days|json_script:"chart-days-data" }}
+  {{ chart_data|json_script:"chart-datasets-data" }}
+{% endblock content %}
+{% block inline_javascript %}
+  <!-- Browser-ready UMD version -->
+  <script src="https://cdn.jsdelivr.net/npm/countup.js@2.6.2/dist/countUp.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Check if the global object exists to avoid ReferenceError
+      if (typeof countUp === 'undefined') {
+        console.error("CountUp library failed to load.");
+        return;
+      }
+
+      document.querySelectorAll(".count-number").forEach(el => {
+        const value = parseFloat(el.dataset.value.replace(/,/g, '')) || 0;
+        const options = {
+          duration: 2,
+          useEasing: true,
+          separator: ","
+        };
+
+        // 2. Use 'new countUp.CountUp' (Case Sensitive)
+        // IMPORTANT: Use a different name for the instance (e.g., 'anim')
+        // to avoid overwriting the global 'countUp' object.
+        const anim = new countUp.CountUp(el, value, options);
+
+        if (!anim.error) {
+          anim.start();
+        } else {
+          console.error(anim.error);
+        }
+      });
+    });
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const ctx = document.getElementById("flockComparisonChart");
+      if (!ctx) return;
+
+      const labels = JSON.parse(
+        document.getElementById("chart-days-data").textContent
+      );
+
+      const datasets = JSON.parse(
+        document.getElementById("chart-datasets-data").textContent
+      ).map(ds => ({
+        label: `${ds.label} %`,
+        data: ds.data,
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3
+      }));
+
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets
+        },
+        options: {
+          responsive: true,
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              position: "bottom"
+            },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const value = context.parsed.y ?? 0;
+                  return `${context.dataset.label}: ${value.toFixed(2)}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Day"
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Percentage"
+              },
+              ticks: {
+                callback: value => `${Number(value).toFixed(2)}%`
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+{% endblock inline_javascript %}

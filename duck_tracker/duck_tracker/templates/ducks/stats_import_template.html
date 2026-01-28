@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  Stats Import – {{ flock.title }}
+{% endblock title %}
+{% block content %}
+  <div class="container py-5">
+    <!-- Back Button -->
+    <a href="{% url 'ducks:flock-detail' flock.id %}"
+       class="btn btn-link text-decoration-none mb-4">
+      <i class="bi bi-chevron-left"></i> Back to {{ flock.title }}
+    </a>
+    <!-- Page Header -->
+    <div class="mb-4">
+      <h1 class="fw-bold">Import Stats</h1>
+      <p class="text-muted mb-0">Follow the guidelines below to successfully import flock statistics.</p>
+    </div>
+    <!-- Guidelines Card -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-light fw-semibold">
+        <i class="bi bi-info-circle me-1"></i> Import Guidelines
+      </div>
+      <div class="card-body">
+        <div class="alert alert-warning small">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          The import file must be a valid <strong>CSV</strong> and strictly follow the format.
+        </div>
+        <ul class="mb-4">
+          <li>
+            File must be in <strong>.csv</strong> format.
+          </li>
+          <li>
+            Dates must be after <strong>{{ flock.started_date|date:"F d, Y" }}</strong>.
+          </li>
+          <li>No duplicate or skipped dates.</li>
+          <li>All numeric values must be valid, non-negative integers.</li>
+          <li>
+            Harvested count must not exceed
+            <strong>{{ flock.number_of_ducks }}</strong>.
+          </li>
+        </ul>
+        <h6 class="fw-semibold">Required CSV Headers</h6>
+        <ul class="list-group list-group-flush mb-4 small">
+          <li class="list-group-item">
+            <strong>date</strong> – YYYY-MM-DD
+          </li>
+          <li class="list-group-item">
+            <strong>harvested</strong> – Eggs collected
+          </li>
+          <li class="list-group-item">
+            <strong>mortality</strong> – Duck deaths
+          </li>
+          <li class="list-group-item">
+            <strong>feed_consumed</strong> – Feed (sacks)
+          </li>
+          <li class="list-group-item">
+            <strong>notes</strong> – Optional
+          </li>
+        </ul>
+        <h6 class="fw-semibold">Accepted Date Formats</h6>
+        <div class="d-flex flex-wrap gap-2 small">
+          <span class="badge bg-secondary">YYYY-MM-DD</span>
+          <span class="badge bg-secondary">MM/DD/YYYY</span>
+          <span class="badge bg-secondary">DD-MM-YY</span>
+          <span class="badge bg-secondary">Jan 01, 2023</span>
+          <span class="badge bg-secondary">January 01, 2023</span>
+        </div>
+        <p class="mt-4 small">
+          Need a template?
+          <a href="{% url 'ducks:flock-detail' flock.id %}#import-export-form">Export a CSV file here</a>.
+        </p>
+      </div>
+    </div>
+    <!-- Import Form Card -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">
+          <i class="bi bi-upload me-1"></i> Import CSV File
+        </h5>
+        <form method="post"
+              enctype="multipart/form-data"
+              action="{% url 'ducks:flock-import' flock.id %}"
+              class="row g-3 align-items-center"
+              data-import-form>
+          {% csrf_token %}
+          <div class="col-md-6">
+            <input type="file"
+                   name="file"
+                   accept=".csv"
+                   required
+                   class="form-control form-control-sm" />
+          </div>
+          <div class="col-auto">
+            <button type="submit" class="btn btn-success btn-sm">
+              <i class="bi bi-cloud-arrow-up"></i> Import Stats
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay"
+         class="position-fixed top-0 start-0 w-100 h-100 d-none loading-overlay">
+      <div class="d-flex flex-column justify-content-center align-items-center h-100">
+        <div class="spinner-border text-primary mb-3"></div>
+        <strong>Importing data, please wait…</strong>
+      </div>
+    </div>
+  </div>
+  {% block inline_javascript %}
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const importForm = document.querySelector('[data-import-form]');
+        const overlay = document.getElementById('loadingOverlay');
+
+        if (!importForm || !overlay) return;
+
+        importForm.addEventListener('submit', () => {
+          overlay.classList.remove('d-none');
+
+          const submitBtn = importForm.querySelector("button[type='submit']");
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('disabled');
+          }
+        });
+      });
+    </script>
+  {% endblock inline_javascript %}
+{% endblock content %}

@@ -23,6 +23,7 @@ urlpatterns = [
     path("users/", include("duck_tracker.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
+    path("ducks/", include("apps.ducks.urls", namespace="ducks")),
     # ...
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),

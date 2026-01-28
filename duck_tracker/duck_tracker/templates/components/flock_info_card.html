@@ -1,0 +1,90 @@
+{% load humanize %}
+{% load constants_tags %}
+
+<section id="{{ card_id | default:'aggregate-info' }}" class="my-2">
+  {% if flock.total_harvested or flock.total_feed_consumed or flock.total_mortality %}
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="row g-3 text-secondary">
+          {% if flock.total_harvested %}
+            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+              <small>{% agg_label "total_harvested" %}</small>
+              <p class="fw-semibold mb-0 count-number"
+                 data-value="{{ flock.total_harvested|default:0 }}">{{ flock.total_harvested|intcomma }}</p>
+            </div>
+          {% endif %}
+          {% if flock.avg_harvested %}
+            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+              <small>{% agg_label "avg_harvested" %}</small>
+              <p class="fw-semibold mb-0 count-number"
+                 data-value="{{ flock.avg_harvested|default:0 }}">{{ flock.avg_harvested|floatformat:0 }}</p>
+            </div>
+          {% endif %}
+          {% if flock.average_percentage %}
+            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+              <small>{% agg_label "average_percentage" %}</small>
+              <p class="fw-semibold mb-0"
+                 data-value="{{ flock.average_percentage|default:0 }}">
+                {{ flock.average_percentage|floatformat:2 }}%
+              </p>
+            </div>
+          {% endif %}
+          {% if flock.total_feed_consumed %}
+            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+              <small>{% agg_label "total_feed_consumed" %}</small>
+              <p class="fw-semibold mb-0 count-number"
+                 data-value="{{ flock.total_feed_consumed|default:0 }}">{{ flock.total_feed_consumed|intcomma }}</p>
+            </div>
+          {% endif %}
+          {% if flock.avg_daily_feed_consumed %}
+            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+              <small>{% agg_label "avg_daily_feed_consumed" %}</small>
+              <p class="fw-semibold mb-0 count-number"
+                 data-value="{{ flock.avg_daily_feed_consumed|default:0 }}">
+                {{ flock.avg_daily_feed_consumed|floatformat:2 }}
+              </p>
+            </div>
+          {% endif %}
+          {% if flock.total_mortality %}
+            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+              <small>{% agg_label "total_mortality" %}</small>
+              <p class="fw-semibold mb-0 text-danger count-number"
+                 data-value="{{ flock.total_mortality|default:0 }}">{{ flock.total_mortality|intcomma }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</section>
+<!-- Browser-ready UMD version -->
+<script src="https://cdn.jsdelivr.net/npm/countup.js@2.6.2/dist/countUp.umd.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // 1. Check if the global object exists to avoid ReferenceError
+    if (typeof countUp === 'undefined') {
+      console.error("CountUp library failed to load.");
+      return;
+    }
+
+    document.querySelectorAll(".count-number").forEach(el => {
+      const value = parseFloat(el.dataset.value.replace(/,/g, '')) || 0;
+      const options = {
+        duration: 2,
+        useEasing: true,
+        separator: ","
+      };
+
+      // 2. Use 'new countUp.CountUp' (Case Sensitive)
+      // IMPORTANT: Use a different name for the instance (e.g., 'anim')
+      // to avoid overwriting the global 'countUp' object.
+      const anim = new countUp.CountUp(el, value, options);
+
+      if (!anim.error) {
+        anim.start();
+      } else {
+        console.error(anim.error);
+      }
+    });
+  });
+</script>

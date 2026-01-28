@@ -73,7 +73,7 @@ DJANGO_APPS = [
     "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "django.contrib.humanize", # Handy template tags
+    "django.contrib.humanize", # Handy template tags
     "django.contrib.admin",
     "django.forms",
 ]
@@ -89,11 +89,13 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
+    "import_export",
 ]
 
 LOCAL_APPS = [
     "duck_tracker.users",
     # Your stuff: custom apps go here
+    "apps.ducks",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -356,3 +358,11 @@ SPECTACULAR_SETTINGS = {
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+DATE_FORMAT = "%b %d, %Y"  # e.g., 'Jun 25, 2024'
+DATE_INPUT_FORMATS = [
+    "%Y-%m-%d",
+    "%m/%d/%Y",
+    "%m/%d/%y",
+    "%b %d, %Y",
+    "%B %d, %Y",
+]  # Add more formats as needed

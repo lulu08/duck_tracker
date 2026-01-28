@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}
+  Flock {{ flock }} - {{ block.super }}
+{% endblock title %}
+{% block content %}
+  <div class="py-5">
+    <a href="{% if flock.pk %}{% url 'ducks:flock-detail' flock.pk %}{% else %}{% url 'ducks:flock-list' %}{% endif %}"
+       class="btn btn-link text-decoration-none mb-4">
+      <i class="bi bi-chevron-left"></i>
+      {% if flock.pk %}
+        Back to Flock {{ flock.title }}
+      {% else %}
+        Back to Flocks
+      {% endif %}
+    </a>
+    <div class="card shadow-sm border-0 border-danger border-3">
+      <div class="card-body p-5">
+        <div class="text-center mb-4">
+          <i class="bi bi-exclamation-triangle warning-symbol"></i>
+        </div>
+        <h2 class="text-center mb-4">Delete Flock?</h2>
+        <p class="text-center text-muted mb-4">
+          Are you sure you want to delete <strong>{{ flock.title }}</strong>?
+        </p>
+        <p class="text-center text-muted small mb-5">
+          <i class="bi bi-info-circle"></i> This action will also delete all associated statistics and cannot be undone.
+        </p>
+        <form method="post" class="mb-3">
+          {% csrf_token %}
+          {{ form | crispy }}
+          <div class="d-flex gap-2 justify-content-center">
+            <button type="submit" class="btn btn-danger btn-lg">
+              <i class="bi bi-trash"></i> Confirm Delete
+            </button>
+            <a href="{% if flock.pk %}{% url 'ducks:flock-detail' flock.pk %}{% else %}{% url 'ducks:flock-list' %}{% endif %}"
+               class="btn btn-secondary btn-lg">
+              <i class="bi bi-arrow-left"></i> Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
