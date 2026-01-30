@@ -14,7 +14,7 @@
         <h1 class="mb-2">My Flocks</h1>
         <p class="text-muted">Manage and track all your duck flocks</p>
       </div>
-      <a href="{% url 'ducks:flock-add' %}" class="btn btn-primary btn-lg">
+      <a href="{% url 'ducks:flock-add' %}" class="btn btn-primary btn-lg btn-sm">
         <i class="bi bi-plus-circle"></i> Add New Flock
       </a>
     </div>
@@ -45,51 +45,58 @@
         </button>
       </form>
     </div>
-    {% comment %}
-    We will use a "show_chart" GET parameter. If it's 1, chart is open; if 0 or missing, chart is collapsed.
-    {% endcomment %}
-    {% with show_chart=request.GET.show_chart|default:"0" %}
-      <!-- Toggle Chart Button -->
-      <div class="mb-3">
-        <a href="?{% if request.GET.is_culled %}is_culled={{ request.GET.is_culled }}&{% endif %}{% if days %}days={{ days }}&{% endif %}show_chart={% if show_chart == '1' %}0{% else %}1{% endif %}"
-           class="btn btn-outline-secondary btn-sm">
-          {% if show_chart == '1' %}
-            <i class="bi bi-arrows-angle-contract"></i> Hide Chart & Days Filter
-          {% else %}
-            <i class="bi bi-arrows-angle-expand"></i> Show Chart & Days Filter
-          {% endif %}
-        </a>
-      </div>
-      <!-- Collapsible Section -->
-      <div class="collapse {% if show_chart == '1' %}show{% endif %}"
-           id="chartSection">
-        <!-- Compare Days Form -->
-        <form method="get" class="row g-2 align-items-end mb-4">
-          <!-- NOTE: Watch out for this params exception!!! -->
-          {% for key, value in request.GET.items %}
-            {% if key != 'days' or key != 'show_chart' %}<input type="hidden" name="{{ key }}" value="{{ value }}" />{% endif %}
-          {% endfor %}
-          <div class="col-auto">
-            <label class="form-label mb-1 small">Compare Days</label>
-            <input type="number"
-                   name="days"
-                   class="form-control form-control-sm"
-                   min="1"
-                   value="{{ days }}" />
-          </div>
-          <div class="col-auto">
-            <button type="submit" class="btn btn-outline-primary btn-sm">Update Chart</button>
-          </div>
-        </form>
-        <!-- Compare Chart -->
-        <section class="card shadow-sm border-0 mb-5">
-          <div class="card-body">
-            <h5 class="mb-3">Flock Comparison (First {{ days }} Days)</h5>
-            <canvas id="flockComparisonChart" height="120"></canvas>
-          </div>
-        </section>
-      </div>
-    {% endwith %}
+
+    {% if flocks %}
+      {% comment %}
+      We will use a "show_chart" GET parameter. If it's 1, chart is open; if 0 or missing, chart is collapsed.
+      {% endcomment %}
+      {% with show_chart=request.GET.show_chart|default:"0" %}
+        <!-- Toggle Chart Button -->
+        <div class="mb-3">
+          <a href="?{% if request.GET.is_culled %}is_culled={{ request.GET.is_culled }}&{% endif %}{% if days %}days={{ days }}&{% endif %}show_chart={% if show_chart == '1' %}0{% else %}1{% endif %}"
+            class="btn btn-outline-secondary btn-sm">
+            {% if show_chart == '1' %}
+              <i class="bi bi-arrows-angle-contract"></i> Hide Chart & Days Filter
+            {% else %}
+              <i class="bi bi-arrows-angle-expand"></i> Show Chart & Days Filter
+            {% endif %}
+          </a>
+        </div>
+        <!-- Collapsible Section -->
+        <div class="collapse {% if show_chart == '1' %}show{% endif %}"
+            id="chartSection">
+          <!-- Compare Days Form -->
+          <form method="get" class="row g-2 align-items-end mb-4">
+            <!-- NOTE: Watch out for this params exception!!! -->
+            {% for key, value in request.GET.items %}
+              {% if key != 'days' or key != 'show_chart' %}<input type="hidden" name="{{ key }}" value="{{ value }}" />{% endif %}
+            {% endfor %}
+            <div class="col-auto">
+              <label class="form-label mb-1 small">Compare Days</label>
+              <input type="number"
+                    name="days"
+                    class="form-control form-control-sm"
+                    min="1"
+                    value="{{ days }}" />
+            </div>
+            <div class="col-auto">
+              <button type="submit" class="btn btn-outline-primary btn-sm">Update Chart</button>
+            </div>
+          </form>
+          <!-- Compare Chart -->
+          <section class="card shadow-sm border-0 mb-5">
+            <div class="card-body">
+              <h5 class="mb-3">Flock Comparison (First {{ days }} Days)</h5>
+
+              <div class="chart-container">
+                <canvas id="flockComparisonChart"></canvas>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      {% endwith %}
+    {% endif %}
     <!-- Flocks Grid -->
     {% if flocks %}
       <div class="row g-4">
@@ -234,6 +241,7 @@
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           interaction: {
             mode: "index",
             intersect: false
