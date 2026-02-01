@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db import models
 
 from config.settings.base import DATE_FORMAT
 
@@ -12,6 +13,7 @@ def validate_flock_dates(flock):
 
     _validate_culled_after_started(flock, errors)
     _validate_stats_against_flock_dates(flock, errors)
+    _validate_flock_size(flock, errors)
 
     if errors:
         raise ValidationError(errors)
@@ -42,6 +44,19 @@ def _validate_stats_against_flock_dates(flock, errors):
         errors["started_date"] = (
             f"Stats entries exist before the started date "
             f"({flock.started_date.strftime(DATE_FORMAT)})."
+        )
+        
+def _validate_flock_size(flock, errors):
+    if not flock.pk:
+        return
+    
+    stats = flock.stats.all()
+    max_harvested = stats.aggregate(models.Max("harvested"))["harvested__max"] or 0 # TODO: harvested_max error
+    if max_harvested > flock.number_of_ducks:
+        errors["number_of_ducks"] = (
+            f"The flock's number of ducks ({flock.number_of_ducks})"
+            f" cannot be less than the maximum harvested value "
+            f"({max_harvested}) recorded in its stats."
         )
 
 

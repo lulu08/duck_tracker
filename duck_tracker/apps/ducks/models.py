@@ -30,6 +30,17 @@ class Flock(models.Model):
         return f"{self.title} ({self.started_date.strftime(DATE_FORMAT)} - {cull})"
 
     def save(self, *args, **kwargs):
+        # Detect change in number_of_ducks
+        old_duck_count = None
+        if self.pk:
+            old_duck_count = (
+                type(self)
+                .objects
+                .filter(pk=self.pk)
+                .values_list("number_of_ducks", flat=True)
+                .first()
+            )
+
         # Auto-set is_culled
         self.is_culled = self.culled_date is not None
 
@@ -39,8 +50,27 @@ class Flock(models.Model):
 
         super().save(*args, **kwargs)
 
+        # 🔁 Recalculate stats percentage if duck count changed
+        if old_duck_count is not None and old_duck_count != self.number_of_ducks:
+            self.recalculate_stats_percentage()
+
+
     def clean(self):
         validate_flock_dates(self)
+
+    def recalculate_stats_percentage(self):
+        if self.number_of_ducks <= 0:
+            self.stats.update(percentage=Decimal("0.00"))
+            return
+
+        stats_to_update = []
+        for stat in self.stats.all():
+            percentage = (stat.harvested / self.number_of_ducks) * 100
+            stat.percentage = percentage
+            stats_to_update.append(stat)
+
+        self.stats.bulk_update(stats_to_update, ["percentage"])
+
 
     @property
     def total_harvested(self):

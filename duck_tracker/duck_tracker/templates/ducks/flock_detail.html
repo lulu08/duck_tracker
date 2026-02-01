@@ -173,26 +173,30 @@
                 <i class="bi bi-percent"></i> Percentage
               </button>
             </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link"
-                      id="mortality-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#mortality-pane"
-                      type="button"
-                      role="tab">
-                <i class="bi bi-heartbreak"></i> Mortality
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link"
-                      id="feeds-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#feeds-pane"
-                      type="button"
-                      role="tab">
-                <i class="bi bi-basket"></i> Feeds
-              </button>
-            </li>
+            {% if not all_mortality_zero %}
+              <li class="nav-item" role="presentation">
+                <button class="nav-link"
+                        id="mortality-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#mortality-pane"
+                        type="button"
+                        role="tab">
+                  <i class="bi bi-heartbreak"></i> Mortality
+                </button>
+              </li>
+            {% endif %}
+            {% if not all_feed_zero %}
+              <li class="nav-item" role="presentation">
+                <button class="nav-link"
+                        id="feeds-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#feeds-pane"
+                        type="button"
+                        role="tab">
+                  <i class="bi bi-basket"></i> Feeds
+                </button>
+              </li>
+            {% endif %}
           </ul>
           <!-- Tab Content -->
           <div class="tab-content">
@@ -209,20 +213,30 @@
               </div>
             </div>
             <!-- Mortality Chart -->
-            <div class="tab-pane fade" id="mortality-pane" role="tabpanel">
-              <div class="chart-container">
-                <canvas id="mortalityChart"></canvas>
+             {% if not all_mortality_zero %}
+              <div class="tab-pane fade" id="mortality-pane" role="tabpanel">
+                <div class="chart-container">
+                  <canvas id="mortalityChart"></canvas>
+                </div>
               </div>
-            </div>
+            {% endif %}
             <!-- Feeds Chart -->
-            <div class="tab-pane fade" id="feeds-pane" role="tabpanel">
-              <div class="chart-container">
-                <canvas id="feedsChart"></canvas>
+             {% if not all_feed_zero %}
+              <div class="tab-pane fade" id="feeds-pane" role="tabpanel">
+                <div class="chart-container">
+                  <canvas id="feedsChart"></canvas>
+                </div>
               </div>
-            </div>
+            {% endif %}
           </div>
         </div>
       </section>
+      {% if all_mortality_zero and all_feed_zero %}
+      <div class="alert alert-info text-center mb-0">
+        <i class="bi bi-info-circle"></i>
+        No mortality or feed data available for the selected range.
+      </div>
+    {% endif %}
       <!-- Pass flock_stats safely to JS -->
       {{ flock_stats_json|json_script:"flockStatsData" }}
     {% endif %}

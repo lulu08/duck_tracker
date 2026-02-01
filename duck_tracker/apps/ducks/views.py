@@ -103,8 +103,10 @@ class FlockDetailView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         flock = context["flock"]
 
-        base_qs = flock.stats.all().order_by("day")
+        base_qs = flock.stats.all().order_by("day", "id")
         stats_qs = self.apply_filters(base_qs)
+        all_mortality_zero = not stats_qs.exclude(mortality=0).exists()
+        all_feed_zero = not stats_qs.exclude(feed_consumed=0).exists()
 
         # --- Aggregates (FULL filtered queryset, not paginated) ---
         aggregates = stats_qs.aggregate(
@@ -164,6 +166,8 @@ class FlockDetailView(generic.DetailView):
 
         context.update(
             {
+                "all_mortality_zero": all_mortality_zero,
+                "all_feed_zero": all_feed_zero,
                 "flock": flock,
                 "flock_stats_json": chart_data,  # for JS
                 "context_stats": page_obj,  # optional
