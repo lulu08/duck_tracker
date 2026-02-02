@@ -1,7 +1,7 @@
 {% load humanize %}
 
 {% for stats in stats %}
-  <tr class="{% if flock.culled_date %}hover-row text-muted{% else %}cursor-pointer hover-row{% endif %}">
+  <tr data-stats-id="{{ stats.id }}" class="{% if flock.culled_date %}hover-row text-muted{% else %}cursor-pointer hover-row{% endif %}">
     <td class="fw-bold">{{ stats.day|intcomma }}</td>
     <td>{{ stats.date|date:"M d, Y" }}</td>
     <td>{{ stats.harvested|intcomma }}</td>
