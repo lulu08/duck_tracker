@@ -10,7 +10,7 @@
 {% block content %}
 <div class="py-5">
   <!-- Back Button -->
-  <a href="{% url 'ducks:flock-list' %}" class="btn btn-link text-decoration-none mb-4">
+  <a href="{% url 'ducks:flock-list' %}" class="btn btn-link text-decoration-none mb-sm-4 mb-1">
     <i class="bi bi-chevron-left"></i> Back to Flocks
   </a>
 
@@ -40,7 +40,7 @@
           {% endif %}
           {% if flock.description %}
             <hr />
-            <p class="text-muted mb-0">{{ flock.description }}</p>
+            <p class="text-muted mb-4 mb-sm-0">{{ flock.description }}</p>
           {% endif %}
         </div>
         <div class="col-md-4 text-end">
@@ -240,6 +240,16 @@
     </div>
   {% endblock modal %}
 </div>
+
+<!-- Scroll to Top Button -->
+<button id="scroll-to-top"
+        class="scroll-top-btn"
+        title="Back to top"
+        aria-label="Back to top">
+  <i class="bi bi-arrow-up-short"></i>
+  <span>Top</span>
+</button>
+
 {% endblock content %}
 
 {% block inline_javascript %}
@@ -389,6 +399,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const upBtn = document.getElementById("scroll-to-top");
+  if (!upBtn) return;
+
+  // Initially hidden
+  upBtn.style.display = "none";
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) {
+      upBtn.style.display = "inline-flex";
+    } else {
+      upBtn.style.display = "none";
+    }
+  });
+
+  // Smooth scroll to top
+  upBtn.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+});
+
 </script>
 
 {% endblock inline_javascript %}
