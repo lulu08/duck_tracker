@@ -7,21 +7,21 @@
       <div class="card-body">
         <div class="row g-3 text-secondary">
           {% if flock.total_harvested %}
-            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+            <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "total_harvested" %}</small>
               <p class="fw-semibold mb-0 count-number"
                  data-value="{{ flock.total_harvested|default:0 }}">{{ flock.total_harvested|intcomma }}</p>
             </div>
           {% endif %}
           {% if flock.avg_harvested %}
-            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+            <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "avg_harvested" %}</small>
               <p class="fw-semibold mb-0 count-number"
                  data-value="{{ flock.avg_harvested|default:0 }}">{{ flock.avg_harvested|floatformat:0 }}</p>
             </div>
           {% endif %}
           {% if flock.average_percentage %}
-            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+            <div class="col-6 col-sm-4 col-md-4 ">
               <small>{% agg_label "average_percentage" %}</small>
               <p class="fw-semibold mb-0"
                  data-value="{{ flock.average_percentage|default:0 }}">
@@ -30,14 +30,14 @@
             </div>
           {% endif %}
           {% if flock.total_feed_consumed %}
-            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+            <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "total_feed_consumed" %}</small>
               <p class="fw-semibold mb-0 count-number"
                  data-value="{{ flock.total_feed_consumed|default:0 }}">{{ flock.total_feed_consumed|intcomma }}</p>
             </div>
           {% endif %}
           {% if flock.avg_daily_feed_consumed %}
-            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+            <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "avg_daily_feed_consumed" %}</small>
               <p class="fw-semibold mb-0 count-number"
                  data-value="{{ flock.avg_daily_feed_consumed|default:0 }}">
@@ -46,7 +46,7 @@
             </div>
           {% endif %}
           {% if flock.total_mortality %}
-            <div class="{% if col_card %} col-md-6 {% else %} col-md-4 {% endif %}">
+            <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "total_mortality" %}</small>
               <p class="fw-semibold mb-0 text-danger count-number"
                  data-value="{{ flock.total_mortality|default:0 }}">{{ flock.total_mortality|intcomma }}</p>
