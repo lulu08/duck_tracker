@@ -8,6 +8,7 @@ from .views import FlockStatsExportView
 from .views import FlockStatsImportView
 from .views import StatsCreateUpdateView
 from .views import StatsImportTemplateView
+from .views import FlockIncomeCalculatorView
 
 app_name = "ducks"
 urlpatterns = [
@@ -32,5 +33,10 @@ urlpatterns = [
         "flocks/<int:pk>/import/template/",
         StatsImportTemplateView.as_view(),
         name="stats-import-template",
+    ),
+    path(
+        "flocks/income-calculator/",
+        FlockIncomeCalculatorView.as_view(),
+        name="income-calculator",
     ),
 ]

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Avg
@@ -14,6 +16,7 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.urls import reverse_lazy
 from django.views import View
 from django.views import generic
 from import_export.exceptions import ImportError as ImportExportError
@@ -21,7 +24,12 @@ from import_export.forms import ExportForm
 from tablib import Dataset
 from tablib.core import UnsupportedFormat
 
+from .forms import EggProductionCostFormSet
+from .forms import EggTypeFormSet
+from .forms import ExpenseTypeFormSet
+from .forms import FeedConsumedForm
 from .forms import FlockForm
+from .forms import FlockIncomeForm
 from .forms import StatsForm
 from .models import Flock
 from .models import Stats
@@ -483,3 +491,152 @@ class FlockStatsImportView(View):
 
         messages.success(request, "Stats imported successfully.")
         return redirect("ducks:flock-detail", pk=flock.pk)
+
+class FlockIncomeCalculatorView(generic.FormView):
+    template_name = "ducks/flock_income_calculator.html"
+    form_class = FlockIncomeForm
+    success_url = reverse_lazy("ducks:flock-income-calculator")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.POST:
+            # Bind EggType, ExpenseType formset and Feed form to POST
+            context["eggType_formset"] = EggTypeFormSet(self.request.POST, prefix="eggs")
+            context["expense_formset"] = ExpenseTypeFormSet(
+                self.request.POST,
+                prefix="expenses",
+            )
+            context["production_cost_formset"] = EggProductionCostFormSet(
+                self.request.POST,
+                prefix="production-cost",
+            )
+            context["feed_form"] = FeedConsumedForm(self.request.POST, prefix="feed")
+        else:
+            # Pre-fill the first EggType row with "Good"
+            initial_data = [{"name": "Good"}]
+            context["eggType_formset"] = EggTypeFormSet(initial=initial_data, prefix="eggs")
+            context["expense_formset"] = ExpenseTypeFormSet(prefix="expenses")
+            context["production_cost_formset"] = EggProductionCostFormSet(
+                prefix="production-cost",
+            )
+            context["feed_form"] = FeedConsumedForm(prefix="feed")
+
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        eggType_formset = context["eggType_formset"]
+        feed_form = context["feed_form"]
+        expense_formset = context["expense_formset"]
+
+        if (
+            not eggType_formset.is_valid()
+            or not feed_form.is_valid()
+            or not expense_formset.is_valid()
+
+        ):
+            return self.form_invalid(form)
+
+        flock_size = form.cleaned_data["flock_size"]
+        production_percent = form.cleaned_data["production_percent"]
+        total_eggs = flock_size * (production_percent / 100)
+
+        # Egg type calculation
+        breakdown = []
+        total_income = 0
+        percent_total = 0
+
+        for egg_form in eggType_formset:
+            if not egg_form.cleaned_data or egg_form.cleaned_data.get("DELETE"):
+                continue
+
+            name = egg_form.cleaned_data["name"]
+            percent = egg_form.cleaned_data["percent"]
+            price = egg_form.cleaned_data["price"]
+
+            percent_total += percent
+            eggs = total_eggs * (percent / 100)
+            income = eggs * float(price)
+
+            breakdown.append(
+                {
+                    "name": name,
+                    "percent": percent,
+                    "eggs": round(eggs, 2),
+                    "price": price,
+                    "income": round(income, 2),
+                },
+            )
+            total_income += income
+
+        # Expense Calculation
+        expense_breakdown = []
+        total_cost = 0
+        for expense_form in expense_formset:
+            if not expense_form.cleaned_data or expense_form.cleaned_data.get("DELETE"):
+                continue
+
+            name = expense_form.cleaned_data["name"]
+            cost = expense_form.cleaned_data["cost"]
+
+            total_cost += cost
+            expense_breakdown.append(
+                {
+                    "name": name,
+                    "cost": cost,
+                },
+            )
+
+        # Feed calculation
+        feed_qty = feed_form.cleaned_data["quantity_g"]
+        feed_price = feed_form.cleaned_data["price_per_sack"]
+        # first, take the overall feed consumed in grams by flock size
+        feed_overall = feed_qty * flock_size
+        # feed_qty is grams, convert first to kg
+        feed_kg = feed_overall / 1000  # since there are 1000 grams in 1 kg
+        # convert to sack (50 kg each)
+        feed_sack = feed_kg / 50
+        feed_cost = Decimal(feed_sack) * Decimal(feed_price)
+
+        # Net income
+        net_income = Decimal(total_income) - (Decimal(feed_cost) + Decimal(total_cost))
+
+        # Production cost calculation
+        # Get the price per kg by dividing it by the kg of a sack
+        feed_price_per_kg = feed_price / 50
+        # Get the price per g next
+        feed_price_per_g = feed_price_per_kg / 1000
+        # Last, multiply it by the quantity_g
+        production_cost_feed = feed_price_per_g * Decimal(feed_qty)
+        production_cost_expenses = Decimal(total_cost) / Decimal(total_eggs) if total_eggs > 0 else Decimal("0.00")
+
+        egg_production_cost_breakdown = {
+            "egg_production_cost_feed": production_cost_feed,
+            "egg_production_cost_expenses": production_cost_expenses,
+            "total_egg_production_cost": (
+                production_cost_feed
+                + production_cost_expenses
+            )
+        }
+
+
+
+        context["result"] = {
+            "total_eggs": round(total_eggs, 2),
+            "breakdown": breakdown,
+            "expense_breakdown": expense_breakdown,
+            "total_income": round(total_income, 2),
+            "percent_total": percent_total,
+            "expenses_total": total_cost,
+            "feed": {
+                "quantity": feed_qty,
+                "feed_sack": feed_sack,
+                "price_per_sack": feed_price,
+                "cost": round(feed_cost, 2),
+            },
+            "net_income": round(net_income, 2),
+            "egg_production_cost": egg_production_cost_breakdown
+        }
+
+        return self.render_to_response(context)

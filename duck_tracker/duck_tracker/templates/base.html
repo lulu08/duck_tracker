@@ -66,6 +66,10 @@
                   <a class="nav-link {% if 'flock' in request.path %}active fw-semibold{% endif %}"
                      href="{% url 'ducks:flock-list' %}">Flocks</a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link {% if 'income' in request.path %}active fw-semibold{% endif %}"
+                     href="{% url 'ducks:income-calculator' %}">Income Calculator</a>
+                </li>
               </ul>
               <!-- Right side -->
               <ul class="navbar-nav ms-auto align-items-md-center gap-md-2">
