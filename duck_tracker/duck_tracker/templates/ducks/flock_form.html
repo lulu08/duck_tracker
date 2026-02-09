@@ -5,15 +5,18 @@
 {% endblock title %}
 {% block content %}
   <div>
-    <a href="{% if flock.pk %}{% url 'ducks:flock-detail' flock.pk %}{% else %}{% url 'ducks:flock-list' %}{% endif %}"
-       class="btn btn-link text-decoration-none mb-4">
-      <i class="bi bi-chevron-left"></i>
-      {% if flock.pk %}
-        Back to Flock {{ flock.title }}
-      {% else %}
-        Back to Flocks
-      {% endif %}
-    </a>
+    {% if flock.pk %}
+      {% url 'ducks:flock-detail' flock.pk as back_url %}
+      {% with back_label="Back to Flock "|add:flock.title %}
+        {% include 'components/back_btn.html' with url=back_url label=back_label %}
+      {% endwith %}
+    {% else %}
+      {% url 'ducks:flock-list' as back_url %}
+      {% with back_label="Back to Flocks" %}
+        {% include 'components/back_btn.html' with url=back_url label=back_label %}
+      {% endwith %}
+    {% endif %}
+
     <div class="card shadow-sm border-0 mb-5">
       <div class="card-body p-5">
         <h1 class="mb-2">{{ flock.title }}</h1>
