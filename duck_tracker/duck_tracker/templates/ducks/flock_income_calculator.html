@@ -7,12 +7,14 @@
   Income Calcultor
 {% endblock title %}
 {% block content %}
-  <div class="container py-5">
+  <div>
     <h2 class="mb-4">Flock Income Calculator</h2>
     <form method="post"
           action="#result-table"
           id="income-form"
-          class="card shadow-sm p-4">
+          class="card shadow-sm p-4"
+          data-is-post="{% if request.method == 'POST' %}1{% else %}0{% endif %}"
+          >
       {% csrf_token %}
       <!-- Flock info -->
       <div class="row g-3 mb-4">

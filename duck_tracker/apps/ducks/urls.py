@@ -12,7 +12,7 @@ from .views import FlockIncomeCalculatorView
 
 app_name = "ducks"
 urlpatterns = [
-    path("", FlockListView.as_view(), name="flock-list"),
+    path("flocks", FlockListView.as_view(), name="flock-list"),
     path("flock/<int:pk>/", FlockDetailView.as_view(), name="flock-detail"),
     path("flock/add/", FlockCreateUpdateView.as_view(), name="flock-add"),
     path("flock/<int:pk>/edit/", FlockCreateUpdateView.as_view(), name="flock-edit"),
@@ -35,7 +35,7 @@ urlpatterns = [
         name="stats-import-template",
     ),
     path(
-        "flocks/income-calculator/",
+        "income-calculator/",
         FlockIncomeCalculatorView.as_view(),
         name="income-calculator",
     ),

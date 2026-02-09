@@ -90,7 +90,6 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "drf_spectacular",
     "import_export",
-    "formset",
 ]
 
 LOCAL_APPS = [

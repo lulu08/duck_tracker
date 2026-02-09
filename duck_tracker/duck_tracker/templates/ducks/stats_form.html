@@ -4,7 +4,7 @@
   {{ page_title }} - {{ block.super }}
 {% endblock title %}
 {% block content %}
-  <div class="py-5">
+  <div>
     {% if flock %}
       <a href="{% url 'ducks:flock-detail' flock.id %}"
          class="btn btn-link text-decoration-none mb-4">
