@@ -2,6 +2,7 @@
 
 {% load humanize %}
 {% load constants_tags %}
+{% load static %}
 
 {% block title %}
   Flock {{ flock }} - {{ block.super }}
@@ -399,31 +400,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const upBtn = document.getElementById("scroll-to-top");
-  if (!upBtn) return;
-
-  // Initially hidden
-  upBtn.style.display = "none";
-
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 300) {
-      upBtn.style.display = "inline-flex";
-    } else {
-      upBtn.style.display = "none";
-    }
-  });
-
-  // Smooth scroll to top
-  upBtn.addEventListener("click", () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-  });
-});
-
-</script>
+<script src="{% static 'js/scroll_to_top.js' %}"></script>
 
 {% endblock inline_javascript %}
