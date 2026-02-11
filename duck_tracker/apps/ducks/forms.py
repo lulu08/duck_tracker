@@ -90,3 +90,110 @@ class StatsForm(forms.ModelForm):
             self.instance.flock = self.flock
 
         return cleaned
+
+class FlockIncomeForm(forms.Form):
+    flock_size = forms.IntegerField(
+        min_value=1,
+        label="Flock Size",
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+
+    production_percent = forms.FloatField(
+        min_value=0,
+        max_value=100,
+        label="Egg Production (%)",
+        widget=forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+    )
+
+
+class EggTypeForm(forms.Form):
+    name = forms.CharField(
+        label="Egg Type",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+
+    percent = forms.FloatField(
+        min_value=0,
+        max_value=100,
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control egg-percent",
+                "step": "0.01",
+            },
+        ),
+    )
+
+    price = forms.DecimalField(
+        min_value=0,
+        decimal_places=2,
+        label="Price per Egg",
+        widget=forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+    )
+
+
+class BaseEggTypeFormSet(forms.BaseFormSet):
+    def clean(self):
+        super().clean()
+
+        total = 0
+        max_pct = 100
+        for form in self.forms:
+            if not form.cleaned_data or form.cleaned_data.get("DELETE"):
+                continue
+            total += form.cleaned_data.get("percent", 0)
+
+        if total > max_pct:
+            msg = "Total egg type percentage cannot exceed 100%."
+            raise forms.ValidationError(
+                msg,
+            )
+
+
+class ExpenseTypeForm(forms.Form):
+    name = forms.CharField(
+        label="Expense Type",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    cost = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control expense-cost",
+            },
+        ),
+    )
+
+
+class EggProductionCostForm(forms.Form):
+    name = forms.CharField(
+        label="Feed Type",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+
+    quantity_g = forms.FloatField(
+        min_value=0,
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+        label="Quantity (g)",
+    )
+
+    price_per_sack = forms.DecimalField(
+        min_value=0,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+        label="Price per sack",
+    )
+
+
+class FeedConsumedForm(forms.Form):
+    quantity_g = forms.FloatField(
+        min_value=0,
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+        label="Quantity (g)",
+    )
+    price_per_sack = forms.DecimalField(
+        min_value=0,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+        label="Price per sack",
+    )

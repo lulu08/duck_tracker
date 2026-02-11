@@ -7,14 +7,14 @@
   Flock List - {{ block.super }}
 {% endblock title %}
 {% block content %}
-  <div class="py-5">
+  <div>
     <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
         <h1 class="mb-2">My Flocks</h1>
         <p class="text-muted">Manage and track all your duck flocks</p>
       </div>
-      <a href="{% url 'ducks:flock-add' %}" class="btn btn-primary btn-lg btn-sm">
+      <a href="{% url 'ducks:flock-add' %}" class="btn btn-primary btn-lg">
         <i class="bi bi-plus-circle"></i> Add New Flock
       </a>
     </div>
