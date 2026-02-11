@@ -24,9 +24,9 @@ from import_export.forms import ExportForm
 from tablib import Dataset
 from tablib.core import UnsupportedFormat
 
-from .forms import EggProductionCostFormSet
-from .forms import EggTypeFormSet
-from .forms import ExpenseTypeFormSet
+from .formsets import EggProductionCostFormSet
+from .formsets import EggTypeFormSet
+from .formsets import ExpenseTypeFormSet
 from .forms import FeedConsumedForm
 from .forms import FlockForm
 from .forms import FlockIncomeForm

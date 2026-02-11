@@ -4,232 +4,341 @@
 {% load static %}
 
 {% block title %}
-  Income Calcultor
+  Income Calculator
 {% endblock title %}
+
 {% block content %}
-  <div>
-    <h2 class="mb-4">Flock Income Calculator</h2>
-    <form method="post"
-          action="#result-table"
-          id="income-form"
-          class="card shadow-sm p-4"
-          data-is-post="{% if request.method == 'POST' %}1{% else %}0{% endif %}"
-          >
-      {% csrf_token %}
-      <!-- Flock info -->
-      <div class="row g-3 mb-4">
-        <div class="col-md-6">
-          {{ form.flock_size.label_tag }}
-          {{ form.flock_size }}
-        </div>
-        <div class="col-md-6">
-          {{ form.production_percent.label_tag }}
-          {{ form.production_percent }}
-        </div>
+<div>
+  <h2 class="mb-4">Flock Income Calculator</h2>
+  <form method="post"
+        action="#result-table"
+        id="income-form"
+        class="card shadow-sm p-4"
+        data-is-post="{% if request.method == 'POST' %}1{% else %}0{% endif %}">
+    {% csrf_token %}
+    <!-- Flock info -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        {{ form.flock_size.label_tag }}
+        {{ form.flock_size }}
       </div>
-      <!-- Egg Types -->
-      <h5 class="mb-3">Egg Types</h5>
-      {{ eggType_formset.management_form }}
-      <div class="alert alert-info d-flex justify-content-between align-items-center mb-3">
-        <strong>Total Percentage:</strong>
-        <span>
-          <span id="current-percent">0</span>% /
-          <span class="fw-bold">100%</span>
-          <span class="ms-2 text-muted">
-            (Remaining: <span id="remaining-percent">100</span>%)
-          </span>
+      <div class="col-md-6">
+        {{ form.production_percent.label_tag }}
+        {{ form.production_percent }}
+      </div>
+    </div>
+
+    <!-- Egg Types -->
+    <h5 class="mb-3">Egg Types</h5>
+    {{ eggType_formset.management_form }}
+    <div class="alert alert-info d-flex justify-content-between align-items-center mb-3">
+      <strong>Total Percentage:</strong>
+      <span>
+        <span id="current-percent">0</span>% /
+        <span class="fw-bold">100%</span>
+        <span class="ms-2 text-muted">
+          (Remaining: <span id="remaining-percent">100</span>%)
         </span>
-      </div>
-      <div id="egg-types">
-        {% for form in eggType_formset %}
-          <div class="row g-2 align-items-end mb-2 egg-row"
-               {% if forloop.first %}data-fixed="true"{% endif %}>
-            <div class="col-md-4">
-              {{ form.name.label_tag }}
-              {{ form.name }}
-            </div>
-            <div class="col-md-3">
-              {{ form.percent.label_tag }}
-              {{ form.percent }}
-            </div>
-            <div class="col-md-3">
-              {{ form.price.label_tag }}
-              {{ form.price }}
-            </div>
-            <div class="col-md-2">
-              <button type="button"
-                      class="btn btn-outline-danger remove-row"
-                      {% if forloop.first %}disabled title="Cannot remove this row"{% endif %}>✕</button>
-            </div>
-            {{ form.DELETE }}
+      </span>
+    </div>
+    <div id="egg-types">
+      {% for form in eggType_formset %}
+        <div class="row g-2 align-items-end mb-2 egg-row"
+             {% if forloop.first %}data-fixed="true"{% endif %}>
+          <div class="col-md-4">
+            {{ form.name.label_tag }}
+            {{ form.name }}
           </div>
-        {% endfor %}
-      </div>
-      <button type="button" class="btn btn-outline-secondary mb-3" id="add-row">+ Add Egg Type</button>
-      {% if eggType_formset.non_form_errors %}<div class="alert alert-danger">{{ eggType_formset.non_form_errors }}</div>{% endif %}
-      <div id="percent-error" class="alert alert-danger d-none" role="alert">
-        Total egg type percentage exceeds 100%.
-        Please adjust the values before calculating.
-      </div>
-      <!-- Feed Consumed -->
-      <h5 class="mb-3 mt-4">Feed Consumed</h5>
-      <div id="feed-info" class="row g-3 mb-3">
-        <div class="col-md-6">
-          {{ feed_form.quantity_g.label_tag }}
-          {{ feed_form.quantity_g }}
+          <div class="col-md-3">
+            {{ form.percent.label_tag }}
+            {{ form.percent }}
+          </div>
+          <div class="col-md-3">
+            {{ form.price.label_tag }}
+            {{ form.price }}
+          </div>
+          <div class="col-md-2">
+            <button type="button"
+                    class="btn btn-outline-danger remove-row"
+                    {% if forloop.first %}disabled title="Cannot remove this row"{% endif %}>✕</button>
+          </div>
+          {{ form.DELETE }}
         </div>
-        <div class="col-md-6">
-          {{ feed_form.price_per_sack.label_tag }}
-          {{ feed_form.price_per_sack }}
+      {% endfor %}
+    </div>
+    <button type="button" class="btn btn-outline-secondary mb-3" id="add-row">+ Add Egg Type</button>
+    {% if eggType_formset.non_form_errors %}<div class="alert alert-danger">{{ eggType_formset.non_form_errors }}</div>{% endif %}
+    <div id="percent-error" class="alert alert-danger d-none" role="alert">
+      Total egg type percentage exceeds 100%.
+      Please adjust the values before calculating.
+    </div>
+
+    <!-- Feed Consumed -->
+    <h5 class="mb-3 mt-4">Feed Consumed</h5>
+    <div id="feed-info" class="row g-3 mb-3">
+      <div class="col-md-6">
+        {{ feed_form.quantity_g.label_tag }}
+        {{ feed_form.quantity_g }}
+      </div>
+      <div class="col-md-6">
+        {{ feed_form.price_per_sack.label_tag }}
+        {{ feed_form.price_per_sack }}
+      </div>
+    </div>
+
+    <!-- Expense Types -->
+    <h5 class="mb-3">Expense Types</h5>
+    {{ expense_formset.management_form }}
+    <div class="alert alert-warning d-flex justify-content-between align-items-center mb-3">
+      <strong>Total Expenses:</strong>
+      <span class="fw-bold">
+        ₱<span id="total-expenses">0.00</span>
+      </span>
+    </div>
+    <div id="expense-types">
+      {% for form in expense_formset %}
+        <div class="row g-2 align-items-end mb-2 egg-row">
+          <div class="col-md-4">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+          </div>
+          <div class="col-md-3">
+            {{ form.cost.label_tag }}
+            {{ form.cost|intcomma }}
+          </div>
+          <div class="col-md-2">
+            <button type="button"
+                    class="btn btn-outline-danger remove-row"
+                    {% if forloop.first %}disabled title="Cannot remove this row"{% endif %}>✕</button>
+          </div>
+          {{ form.DELETE }}
         </div>
-      </div>
-      <!-- Expense Types -->
-      <h5 class="mb-3">Expense Types</h5>
-      {{ expense_formset.management_form }}
-      <div class="alert alert-warning d-flex justify-content-between align-items-center mb-3">
-        <strong>Total Expenses:</strong>
-        <span class="fw-bold">
-          ₱<span id="total-expenses">0.00</span>
-        </span>
-      </div>
-      <div id="expense-types">
-        {% for form in expense_formset %}
-          <div class="row g-2 align-items-end mb-2 egg-row">
-            <div class="col-md-4">
-              {{ form.name.label_tag }}
-              {{ form.name }}
+      {% endfor %}
+    </div>
+    <button type="button"
+            class="btn btn-outline-secondary mb-3"
+            id="add-row-expense">+ Add Expense Type</button>
+    {% if expense_formset.non_form_errors %}
+      <div class="alert alert-danger">{{ expense_formset.non_form_errors }}</div>
+    {% endif %}
+    <div id="expense-error" class="alert alert-danger d-none" role="alert">
+      Total egg type percentage exceeds 100%.
+      Please adjust the values before calculating.
+    </div>
+
+    <!-- Submit -->
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary">Calculate</button>
+    </div>
+  </form>
+
+  <!-- Result Table -->
+  {% if result %}
+    <div id="result-table" class="card mt-4 shadow-sm">
+      <div class="card-body">
+        <!-- Daily Income Summary -->
+        <div class="card border-primary mb-3 p-3">
+          <h5 class="card-title text-primary fw-bold mb-3">Daily Income Summary</h5>
+
+          <div class="row g-3">
+            <div class="col-md-3">
+              <strong>Total Egg Income:</strong>
+              <span data-daily="total_income" data-value="{{ result.total_income }}">
+                ₱{{ result.total_income|intcomma }}
+              </span>
             </div>
             <div class="col-md-3">
-              {{ form.cost.label_tag }}
-              {{ form.cost|intcomma }}
+              <strong>Feed Cost:</strong>
+              <span data-daily="feed_cost" data-value="{{ result.feed.cost }}">
+                ₱{{ result.feed.cost|intcomma }}
+              </span>
             </div>
-            <div class="col-md-2">
-              <button type="button"
-                      class="btn btn-outline-danger remove-row"
-                      {% if forloop.first %}disabled title="Cannot remove this row"{% endif %}>✕</button>
+            <div class="col-md-3">
+              <strong>Other Expenses:</strong>
+              <span data-daily="expenses" data-value="{{ result.expenses_total }}">
+                ₱{{ result.expenses_total|intcomma }}
+              </span>
             </div>
-            {{ form.DELETE }}
+            <div class="col-md-3">
+              <strong>Net Income:</strong>
+              <span data-daily="net_income" data-value="{{ result.net_income }}">
+                ₱{{ result.net_income|intcomma }}
+              </span>
+            </div>
           </div>
-        {% endfor %}
-      </div>
-      <button type="button"
-              class="btn btn-outline-secondary mb-3"
-              id="add-row-expense">+ Add Expense Type</button>
-      {% if expense_formset.non_form_errors %}
-        <div class="alert alert-danger">{{ expense_formset.non_form_errors }}</div>
-      {% endif %}
-      <div id="expense-error" class="alert alert-danger d-none" role="alert">
-        Total egg type percentage exceeds 100%.
-        Please adjust the values before calculating.
-      </div>
-      <!-- Submit -->
-      <div class="text-end">
-        <button type="submit" class="btn btn-primary">Calculate</button>
-      </div>
-    </form>
-    <!-- Result Table -->
-    {% if result %}
-      <div id="result-table" class="card mt-4 shadow-sm">
-        <div class="card-body">
-          <h5>Total Eggs Produced Daily: {{ result.total_eggs|intcomma }}</h5>
-          <h5>Total Egg Income: ₱{{ result.total_income|intcomma }}</h5>
-          <!-- Egg breakdown table -->
-          <table class="table mt-3">
-            <thead>
+        </div>
+
+
+        <!-- Egg breakdown table -->
+        <table class="table mt-3">
+          <thead>
+            <tr>
+              <th>Egg Type</th>
+              <th>%</th>
+              <th>Eggs</th>
+              <th>Price</th>
+              <th>Income</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in result.breakdown %}
               <tr>
-                <th>Egg Type</th>
-                <th>%</th>
-                <th>Eggs</th>
-                <th>Price</th>
-                <th>Income</th>
+                <td>{{ row.name }}</td>
+                <td>{{ row.percent }}%</td>
+                <td>{{ row.eggs|intcomma }}</td>
+                <td>₱{{ row.price }}</td>
+                <td>₱{{ row.income|intcomma }}</td>
               </tr>
-            </thead>
-            <tbody>
-              {% for row in result.breakdown %}
-                <tr>
-                  <td>{{ row.name }}</td>
-                  <td>{{ row.percent }}%</td>
-                  <td>{{ row.eggs|intcomma }}</td>
-                  <td>₱{{ row.price }}</td>
-                  <td>₱{{ row.income|intcomma }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          {% if result.percent_total != 100 %}
-            <div class="alert alert-warning">Egg type percentages total {{ result.percent_total }}%.</div>
-          {% endif %}
-          <!-- Feed info -->
-          <div class="mt-4">
-            <h5>Feed Consumed</h5>
-            <div class="row g-3">
-              <div class="col-md-6">
-                <strong>Quantity (g):</strong> {{ result.feed.quantity|intcomma }}
-              </div>
-              <div class="col-md-6">
-                <strong>Sack:</strong> {{ result.feed.feed_sack|intcomma }}
-              </div>
-              <div class="col-md-6">
-                <strong>Price per sack:</strong> ₱{{ result.feed.price_per_sack }}
-              </div>
-              <div class="col-md-6">
-                <strong>Feed Cost:</strong> ₱{{ result.feed.cost|intcomma }}
-              </div>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% if result.percent_total != 100 %}
+          <div class="alert alert-warning">Egg type percentages total {{ result.percent_total }}%.</div>
+        {% endif %}
+
+        <!-- Feed info -->
+        <div class="mt-4">
+          <h5>Feed Consumed</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <strong>Quantity (g):</strong> {{ result.feed.quantity|intcomma }}
+            </div>
+            <div class="col-md-6">
+              <strong>Sack:</strong> {{ result.feed.feed_sack|intcomma }}
+            </div>
+            <div class="col-md-6">
+              <strong>Price per sack:</strong> ₱{{ result.feed.price_per_sack }}
+            </div>
+            <div class="col-md-6">
+              <strong>Feed Cost:</strong> ₱{{ result.feed.cost|intcomma }}
             </div>
           </div>
-          <!-- Expense Info -->
-          {% if result.expense_breakdown %}
-            <div class="mt-4">
-              <h5>Expenses</h5>
-              <table class="table table-sm">
-                <thead>
-                  <tr>
-                    <th>Expense</th>
-                    <th class="text-end">Cost</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for row in result.expense_breakdown %}
-                    <tr>
-                      <td>{{ row.name }}</td>
-                      <td class="text-end">₱{{ row.cost|intcomma }}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% endif %}
-          <!-- Net income -->
-          <h5 class="mt-3">Net Income: ₱{{ result.net_income|intcomma }}</h5>
+        </div>
+
+        <!-- Expense Info -->
+        {% if result.expense_breakdown %}
           <div class="mt-4">
-            <h5>Egg Production Cost per Egg</h5>
+            <h5>Expenses</h5>
             <table class="table table-sm">
               <thead>
                 <tr>
-                  <th>Cost Type</th>
-                  <th class="text-end">Cost per Egg</th>
+                  <th>Expense</th>
+                  <th class="text-end">Cost</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Feed Cost</td>
-                  <td class="text-end">₱{{ result.egg_production_cost.egg_production_cost_feed|floatformat:2 }}</td>
-                </tr>
-                <tr>
-                  <td>Expenses Cost</td>
-                  <td class="text-end">₱{{ result.egg_production_cost.egg_production_cost_expenses|floatformat:2 }}</td>
-                </tr>
-                <tr class="fw-bold">
-                  <td>Total Production Cost per Egg</td>
-                  <td class="text-end">₱{{ result.egg_production_cost.total_egg_production_cost|floatformat:2 }}</td>
-                </tr>
+                {% for row in result.expense_breakdown %}
+                  <tr>
+                    <td>{{ row.name }}</td>
+                    <td class="text-end">₱{{ row.cost|intcomma }}</td>
+                  </tr>
+                {% endfor %}
               </tbody>
             </table>
+          </div>
+        {% endif %}
+
+        <!-- Cumulative Income -->
+        <hr class="my-4">
+        <div class="card border-success">
+          <div class="card-body">
+            <h5 class="card-title text-success">Cumulative Income Calculator</h5>
+
+            <div class="row g-3 align-items-end mb-3">
+              <div class="col-md-4">
+                <label for="days" class="form-label">Number of Days</label>
+                <input type="number" min="1" class="form-control" id="days" value="1">
+              </div>
+            </div>
+
+            <div id="cumulative-result" class="mt-3">
+              <p class="text-muted">Enter the number of days to see cumulative values.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Egg Production Cost per Egg -->
+        <div class="mt-4">
+          <h5>Egg Production Cost per Egg</h5>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Cost Type</th>
+                <th class="text-end">Cost per Egg</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Feed Cost</td>
+                <td class="text-end">₱{{ result.egg_production_cost.egg_production_cost_feed|floatformat:2 }}</td>
+              </tr>
+              <tr>
+                <td>Expenses Cost</td>
+                <td class="text-end">₱{{ result.egg_production_cost.egg_production_cost_expenses|floatformat:2 }}</td>
+              </tr>
+              <tr class="fw-bold">
+                <td>Total Production Cost per Egg</td>
+                <td class="text-end">₱{{ result.egg_production_cost.total_egg_production_cost|floatformat:2 }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    {% endif %}
-  </div>
+    </div>
+  {% endif %}
+</div>
 {% endblock content %}
+
 {% block inline_javascript %}
-  <script src="{% static 'js/formset-handler.js' %}"></script>
+<script src="{% static 'js/formset-handler.js' %}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const daysInput = document.getElementById("days");
+  const cumulativeResultDiv = document.getElementById("cumulative-result");
+
+  function formatNumber(num) {
+    return new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+  }
+
+  function updateCumulative() {
+    const days = parseInt(daysInput.value) || 1;
+
+    // Correct selectors: look for span[data-daily]
+    const dailyIncome = parseFloat(document.querySelector("span[data-daily='total_income']").dataset.value);
+    const dailyFeed = parseFloat(document.querySelector("span[data-daily='feed_cost']").dataset.value);
+    const dailyExpenses = parseFloat(document.querySelector("span[data-daily='expenses']").dataset.value);
+    const dailyNet = parseFloat(document.querySelector("span[data-daily='net_income']").dataset.value);
+
+    cumulativeResultDiv.innerHTML = `
+      <h6 class="fw-bold text-success mb-3">${days}-Day Cumulative Summary</h6>
+      <table class="table table-sm">
+        <tbody>
+          <tr>
+            <td>Total Egg Income</td>
+            <td class="text-end">₱${formatNumber(dailyIncome * days)}</td>
+          </tr>
+          <tr>
+            <td>Feed Cost</td>
+            <td class="text-end text-danger">₱${formatNumber(dailyFeed * days)}</td>
+          </tr>
+          <tr>
+            <td>Other Expenses</td>
+            <td class="text-end text-danger">₱${formatNumber(dailyExpenses * days)}</td>
+          </tr>
+          <tr class="fw-bold border-top">
+            <td>Net Income</td>
+            <td class="text-end text-success">₱${formatNumber(dailyNet * days)}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+  }
+
+  daysInput.addEventListener("input", updateCumulative);
+  updateCumulative(); // initial calculation
+});
+</script>
+
 {% endblock inline_javascript %}

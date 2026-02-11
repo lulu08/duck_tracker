@@ -197,24 +197,3 @@ class FeedConsumedForm(forms.Form):
         widget=forms.NumberInput(attrs={"class": "form-control"}),
         label="Price per sack",
     )
-
-
-EggTypeFormSet = forms.formset_factory(
-    EggTypeForm,
-    formset=BaseEggTypeFormSet,
-    extra=1,
-    can_delete=True,
-)
-
-
-ExpenseTypeFormSet = forms.formset_factory(
-    ExpenseTypeForm,
-    extra=1,
-    can_delete=True,
-)
-
-EggProductionCostFormSet = forms.formset_factory(
-    EggProductionCostForm,
-    extra=1,
-    can_delete=True,
-)
