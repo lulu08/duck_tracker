@@ -1,5 +1,7 @@
 from django import forms
 
+from config.settings.base import DATE_INPUT_FORMATS
+
 from .models import Flock
 from .models import Stats
 
@@ -29,10 +31,10 @@ class FlockForm(forms.ModelForm):
                 },
             ),
             "started_date": forms.DateInput(
-                attrs={"class": "form-control", "type": "date"},
+                attrs={"class": "form-control date-input", "type": "date"},
             ),
             "culled_date": forms.DateInput(
-                attrs={"class": "form-control", "type": "date"},
+                attrs={"class": "form-control date-input", "type": "date"},
             ),
         }
 
@@ -58,7 +60,7 @@ class StatsForm(forms.ModelForm):
         model = Stats
         fields = ["date", "harvested", "notes", "mortality", "feed_consumed"]
         widgets = {
-            "date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "date": forms.DateInput(attrs={"class": "form-control date-input", "type": "date"}),
             "harvested": forms.NumberInput(
                 attrs={"class": "form-control", "type": "number", "min": "0"},
             ),

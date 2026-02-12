@@ -51,12 +51,14 @@
         {% endif %}
       {% endif %}
     </td>
+    {% if not flock.is_culled %}
     <td colspan="8" class="text-start">
-      <button class="btn btn-outline-secondary"
+      <button class="btn btn-outline-secondary {% if flock.is_culled %}disabled {% endif %}"
               {% if not flock.is_culled %}onclick="window.location.href='{% url 'ducks:stats-edit' stats.id %}?flock={{ flock.id }}';" role="button"{% endif %}>
         <i class="bi bi-arrow-right"></i>
       </button>
     </td>
+    {% endif %}
   </tr>
 {% empty %}
   <tr>

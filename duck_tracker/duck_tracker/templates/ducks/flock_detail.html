@@ -58,9 +58,9 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="mb-0">Performance Stats</h3>
     {% if flock.is_culled %}
-      <span class="text-muted">Flock is culled; no new stats can be added.</span>
+      <span class="text-muted ms-3 ms-sm-0">Flock was culled; no new stats can be added.</span>
     {% else %}
-      <a href="{% url 'ducks:stats-add' %}?flock={{ flock.id }}" class="btn btn-primary">
+      <a href="{% url 'ducks:stats-add' %}?flock={{ flock.id }}" class="btn btn-primary ms-3 ms-sm-0">
         <i class="bi bi-plus-circle"></i> Add Stats Entry
       </a>
     {% endif %}

@@ -1,3 +1,26 @@
 {% if not field.is_hidden %}<label for="{{ field.id_for_label }}">{{ field.label }}:</label>{% endif %}
-{{ field }}
+{% if field.field.widget.input_type == "date" %}
+  <div class="date-input-wrapper" style="display: flex; gap: 8px; align-items: center;">
+    {{ field }}
+    <button type="button" class="btn-clear-date" style="background: none; border: none; cursor: pointer; padding: 4px; color: #666; font-size: 18px; flex-shrink: 0;" title="Clear date">✕</button>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const inputId = "{{ field.id_for_label }}";
+      const dateInput = document.getElementById(inputId);
+      const clearBtn = dateInput?.parentElement.querySelector(".btn-clear-date");
+      
+      if (clearBtn && dateInput) {
+        clearBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dateInput.value = "";
+          dateInput.blur();
+        });
+      }
+    });
+  </script>
+{% else %}
+  {{ field }}
+{% endif %}
 {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
