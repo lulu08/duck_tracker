@@ -14,15 +14,17 @@
     </td>
     <td>
       {% if stats.notes %}
-        <!-- Create a modal that will show the notes -->
         <button type="button"
-                class="btn btn-link p-0 text-decoration-none"
+                class="btn btn-link p-0 text-decoration-none view-notes-btn"
                 data-bs-toggle="modal"
                 data-bs-target="#notesModal"
-                data-notes="{{ stats.notes|escapejs }}"
                 title="View notes">
           <i class="bi bi-journal-text"></i>
         </button>
+
+        <div class="d-none notes-content">
+          {{ stats.notes|safe }}
+        </div>
       {% else %}
         <span class="text-muted">—</span>
       {% endif %}

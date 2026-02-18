@@ -135,3 +135,13 @@ a.text-decoration-none:hover {
   transform: translateY(0);
   box-shadow: 0 6px 14px rgba(13, 110, 253, 0.25);
 }
+.django-ckeditor-widget {
+    width: 100% !important;
+}
+#notesModalBody p {
+  margin-bottom: 1rem;
+}
+
+#notesModalBody ul {
+  padding-left: 1.5rem;
+}

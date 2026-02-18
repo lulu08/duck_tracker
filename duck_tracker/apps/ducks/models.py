@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
-
+from ckeditor.fields import RichTextField
 from config.settings.base import DATE_FORMAT
 
 from .validators import validate_flock_dates
@@ -16,7 +16,7 @@ def today():
 class Flock(models.Model):
     title = models.CharField(max_length=100)
     number_of_ducks = models.PositiveIntegerField()
-    description = models.TextField(blank=True, verbose_name="Notes")
+    description = RichTextField(blank=True, verbose_name="Notes")
     started_date = models.DateField(default=today)
     culled_date = models.DateField(blank=True, null=True)
     is_culled = models.BooleanField(default=False)
@@ -135,7 +135,7 @@ class Stats(models.Model):
         decimal_places=2,
         default=Decimal("0.00"),
     )
-    notes = models.TextField(blank=True)
+    notes = RichTextField(blank=True)
     mortality = models.PositiveBigIntegerField(default=0)
     feed_consumed = models.FloatField(
         help_text="Feed consumed (sacks)",

@@ -39,10 +39,10 @@
           {% endif %}
           {% if flock.description %}
             <hr />
-            <p class="text-muted mb-4 mb-sm-0">{{ flock.description }}</p>
+            <p class="text-muted mb-4 mb-sm-0">{{ flock.description|safe }}</p>
           {% endif %}
         </div>
-        <div class="col-md-4 text-end">
+        <div class="col-md-4 text-end mt-3 mt-sm-0">
           <a href="{% url 'ducks:flock-edit' flock.id %}" class="btn btn-warning mb-md-1">
             <i class="bi bi-pencil"></i> Edit Flock
           </a>
@@ -87,37 +87,39 @@
   </div>
 
   <!-- Filters Form -->
-  <section id="filter-section" class="mb-4">
-    <form method="get" action="#filter-section" class="row g-3 align-items-end">
-      <div class="col-auto">
-        <label for="start_date" class="form-label">Start Date</label>
-        <input type="date" class="form-control" id="start_date" name="start_date"
-               min="{{ min_date|date:'Y-m-d' }}" max="{{ max_date|date:'Y-m-d' }}"
-               value="{{ request.GET.start_date }}" {% if request.GET.day %}disabled{% endif %} />
-      </div>
-      <div class="col-auto">
-        <label for="end_date" class="form-label">End Date</label>
-        <input type="date" class="form-control" id="end_date" name="end_date"
-               min="{{ min_date|date:'Y-m-d' }}" max="{{ max_date|date:'Y-m-d' }}"
-               value="{{ request.GET.end_date }}" {% if request.GET.day %}disabled{% endif %} />
-      </div>
-      <div class="col-auto">
-        <label for="day" class="form-label">Day (up to)</label>
-        <input type="number" class="form-control" id="day" name="day" min="1"
-               value="{{ request.GET.day }}" {% if has_date_filter %}disabled{% endif %} />
-      </div>
-      <div class="col-auto">
-        <a href="{% url 'ducks:flock-detail' flock.id %}#filter-section" class="btn btn-outline-secondary">
-          <i class="bi bi-x-circle"></i> Clear Filters
-        </a>
-      </div>
-      <div class="col-auto">
-        <button type="submit" class="btn btn-primary">
-          <i class="bi bi-funnel"></i> Apply Filters
-        </button>
-      </div>
-    </form>
-  </section>
+  {% if stats %}
+    <section id="filter-section" class="mb-4">
+      <form method="get" action="#filter-section" class="row g-3 align-items-end">
+        <div class="col-auto">
+          <label for="start_date" class="form-label">Start Date</label>
+          <input type="date" class="form-control" id="start_date" name="start_date"
+                min="{{ min_date|date:'Y-m-d' }}" max="{{ max_date|date:'Y-m-d' }}"
+                value="{{ request.GET.start_date }}" {% if request.GET.day %}disabled{% endif %} />
+        </div>
+        <div class="col-auto">
+          <label for="end_date" class="form-label">End Date</label>
+          <input type="date" class="form-control" id="end_date" name="end_date"
+                min="{{ min_date|date:'Y-m-d' }}" max="{{ max_date|date:'Y-m-d' }}"
+                value="{{ request.GET.end_date }}" {% if request.GET.day %}disabled{% endif %} />
+        </div>
+        <div class="col-auto">
+          <label for="day" class="form-label">Day (up to)</label>
+          <input type="number" class="form-control" id="day" name="day" min="1"
+                value="{{ request.GET.day }}" {% if has_date_filter %}disabled{% endif %} />
+        </div>
+        <div class="col-auto">
+          <a href="{% url 'ducks:flock-detail' flock.id %}#filter-section" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle"></i> Clear Filters
+          </a>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-funnel"></i> Apply Filters
+          </button>
+        </div>
+      </form>
+    </section>
+  {% endif %}
 
   <!-- Aggregate Info Card -->
   {% include 'components/flock_info_card.html' with flock=aggregates card_id="card-info{{ flock.id }}" %}
@@ -205,7 +207,7 @@
             <th>Mortality</th>
             <th>Feed</th>
             <th>Inc/Dec</th>
-            <th></th>
+            {% if not flock.is_culled %}<th></th>{% endif %}
           </tr>
         </thead>
         <tbody id="stats-body">

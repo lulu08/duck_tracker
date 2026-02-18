@@ -29,6 +29,7 @@
           {% csrf_token %}
           {% if flock %}<input type="hidden" name="flock" value="{{ flock.pk }}" />{% endif %}
           <div class="form-group mb-4">
+            {{ form.media }}
             {% for field in form %}
               <div class="mb-3">
                 {% include 'form_field.html' with field=field %}

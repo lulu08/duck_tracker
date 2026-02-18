@@ -131,7 +131,7 @@
                   </div>
                   <!-- Description Preview -->
                   {% if flock.description %}
-                    <p class="card-text text-muted small mb-0 truncate-preview">{{ flock.description|truncatewords:15 }}</p>
+                    <p class="card-text text-muted small mb-0 truncate-preview">{{ flock.description|truncatewords:15|safe }}</p>
                   {% endif %}
                   <!-- Mini Aggregate Info Row -->
                   <div class="row g-2 mb-2 text-secondary">

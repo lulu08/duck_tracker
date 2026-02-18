@@ -1,6 +1,7 @@
 from django import forms
 
 from config.settings.base import DATE_INPUT_FORMATS
+from ckeditor.widgets import CKEditorWidget
 
 from .models import Flock
 from .models import Stats
@@ -23,13 +24,7 @@ class FlockForm(forms.ModelForm):
             "number_of_ducks": forms.NumberInput(
                 attrs={"class": "form-control", "min": "1"},
             ),
-            "description": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 4,
-                    "placeholder": "Notes about this flock",
-                },
-            ),
+            "description": CKEditorWidget(),
             "started_date": forms.DateInput(
                 attrs={"class": "form-control date-input", "type": "date"},
             ),
@@ -75,13 +70,7 @@ class StatsForm(forms.ModelForm):
                     "step": "0.1",
                 },
             ),
-            "notes": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 4,
-                    "placeholder": "Add any notes",
-                },
-            ),
+            "notes": CKEditorWidget(),
         }
 
     def clean(self):

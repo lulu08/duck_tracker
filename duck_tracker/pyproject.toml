@@ -181,6 +181,7 @@ dependencies = [
     "django-storages[s3]==1.14.6",
     "djangorestframework==3.16.1",
     "django-import-export[xlsx]==4.3.14",
+    "django-ckeditor==6.7.3",
     "tablib[xlsx]==3.9.0",
     "drf-spectacular==0.29.0",
     "gunicorn==23.0.0",

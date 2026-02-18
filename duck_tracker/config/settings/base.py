@@ -90,6 +90,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "drf_spectacular",
     "import_export",
+    "ckeditor",
 ]
 
 LOCAL_APPS = [
@@ -366,3 +367,16 @@ DATE_INPUT_FORMATS = [
     "%b %d, %Y",
     "%B %d, %Y",
 ]  # Add more formats as needed
+
+CKEDITOR_CONFIGS = {
+    "default": {
+        "toolbar": [
+            ["Bold", "Italic", "Underline"],
+            ["NumberedList", "BulletedList"],
+            ["Link", "Unlink"],
+            ["Undo", "Redo"],
+        ],
+        "height": 200,
+        "width": "100%",
+    }
+}
