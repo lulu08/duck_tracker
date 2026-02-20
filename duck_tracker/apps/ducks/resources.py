@@ -71,7 +71,6 @@ class StatsResource(resources.ModelResource):
             "percentage",
             "mortality",
             "feed_consumed",
-            "notes",
         )
         skip_unchanged = True
         use_transactions = True

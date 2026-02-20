@@ -9,22 +9,21 @@
           {% if flock.total_harvested %}
             <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "total_harvested" %}</small>
-              <p class="fw-semibold mb-0 count-number"
-                 data-value="{{ flock.total_harvested|default:0 }}">{{ flock.total_harvested|intcomma }}</p>
+              <p class="fw-semibold mb-0"
+                 >{{ flock.total_harvested|intcomma }}</p>
             </div>
           {% endif %}
           {% if flock.avg_harvested %}
             <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "avg_harvested" %}</small>
-              <p class="fw-semibold mb-0 count-number"
-                 data-value="{{ flock.avg_harvested|default:0 }}">{{ flock.avg_harvested|floatformat:0 }}</p>
+              <p class="fw-semibold mb-0"
+                >{{ flock.avg_harvested|floatformat:0 }}</p>
             </div>
           {% endif %}
           {% if flock.average_percentage %}
             <div class="col-6 col-sm-4 col-md-4 ">
               <small>{% agg_label "average_percentage" %}</small>
-              <p class="fw-semibold mb-0 count-number"
-                 data-value="{{ flock.average_percentage|default:0 }}">
+              <p class="fw-semibold mb-0">
                 {{ flock.average_percentage|floatformat:2 }}%
               </p>
             </div>
@@ -32,24 +31,23 @@
           {% if flock.total_feed_consumed %}
             <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "total_feed_consumed" %}</small>
-              <p class="fw-semibold mb-0 count-number"
-                 data-value="{{ flock.total_feed_consumed|default:0 }}">{{ flock.total_feed_consumed|intcomma }}</p>
+              <p class="fw-semibold mb-0"
+                 >{{ flock.total_feed_consumed|intcomma }}</p>
             </div>
           {% endif %}
           {% if flock.avg_daily_feed_consumed %}
             <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "avg_daily_feed_consumed" %}</small>
-              <p class="fw-semibold mb-0 count-number"
-                 data-value="{{ flock.avg_daily_feed_consumed|default:0 }}">
-                {{ flock.avg_daily_feed_consumed|floatformat:2 }}
-              </p>
+              <p class="fw-semibold mb-0">
+                 {{ flock.avg_daily_feed_consumed|floatformat:2 }}
+                </p>
             </div>
           {% endif %}
           {% if flock.total_mortality %}
             <div class="col-6 col-sm-4 col-md-4">
               <small>{% agg_label "total_mortality" %}</small>
-              <p class="fw-semibold mb-0 text-danger count-number"
-                 data-value="{{ flock.total_mortality|default:0 }}">{{ flock.total_mortality|intcomma }}</p>
+              <p class="fw-semibold mb-0 text-danger"
+                 >{{ flock.total_mortality|intcomma }}</p>
             </div>
           {% endif %}
         </div>
@@ -69,10 +67,13 @@
 
     document.querySelectorAll(".count-number").forEach(el => {
       const value = parseFloat(el.dataset.value.replace(/,/g, '')) || 0;
+      const decimals = parseInt(el.dataset.decimals) || 0;
       const options = {
         duration: 2,
         useEasing: true,
-        separator: ","
+        separator: ",",
+        decimal: ".",
+        decimals: decimals
       };
 
       // 2. Use 'new countUp.CountUp' (Case Sensitive)

@@ -82,6 +82,19 @@ class StatsForm(forms.ModelForm):
 
         return cleaned
 
+class StatsSortForm(forms.Form):
+    SORT_CHOICES = (
+        ("date_asc", "Date (Oldest to Newest)"),
+        ("date_desc", "Date (Newest to Oldest)"),
+    )
+
+    sort = forms.ChoiceField(
+        choices=SORT_CHOICES,
+        required=False,
+        label="Sort By",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+
 class FlockIncomeForm(forms.Form):
     flock_size = forms.IntegerField(
         min_value=1,

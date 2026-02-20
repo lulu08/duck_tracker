@@ -141,15 +141,15 @@
                     {% if flock.total_harvested %}
                       <div class="col-6">
                         <small>{% agg_label "total_harvested" %}</small>
-                        <p class="fw-semibold mb-0 count-number"
-                           data-value="{{ flock.total_harvested|default:0 }}">{{ flock.total_harvested|intcomma }}</p>
+                        <p class="fw-semibold mb-0"
+                           >{{ flock.total_harvested|intcomma }}</p>
                       </div>
                     {% endif %}
                     {% if flock.average_percentage %}
                       <div class="col-6">
                         <small>{% agg_label "average_percentage" %}</small>
-                        <p class="fw-semibold mb-0 count-number"
-                        data-value="{{ flock.average_percentage|default:0 }}">{{ flock.average_percentage|floatformat:2 }}</p>
+                        <p class="fw-semibold mb-0"
+                        >{{ flock.average_percentage|floatformat:2 }}</p>
                       </div>
                     {% endif %}
                   </div>
