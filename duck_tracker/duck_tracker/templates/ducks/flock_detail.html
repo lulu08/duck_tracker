@@ -74,6 +74,7 @@
       <input type="hidden" name="day" value="{{ request.GET.day }}" />
       <input type="hidden" name="start_date" value="{{ request.GET.start_date }}" />
       <input type="hidden" name="end_date" value="{{ request.GET.end_date }}" />
+      <input type="hidden" name="sort" value="{{ request.GET.sort }}" />
       <button type="submit" class="btn btn-outline-primary btn-sm">
         <i class="bi bi-download"></i> Export
       </button>
@@ -106,6 +107,17 @@
           <label for="day" class="form-label">Day (up to)</label>
           <input type="number" class="form-control" id="day" name="day" min="1"
                 value="{{ request.GET.day }}" {% if has_date_filter %}disabled{% endif %} />
+        </div>
+        <div class="col-auto">
+          <label for="sort" class="form-label">Sort By</label>
+          <select class="form-select" id="sort" name="sort">
+            <option value="day_asc" {% if request.GET.sort == "day_asc" %}selected{% endif %}>Day ↑</option>
+            <option value="day_desc" {% if request.GET.sort == "day_desc" %}selected{% endif %}>Day ↓</option>
+            <!-- <option value="harvested_asc" {% if request.GET.sort == "harvested_asc" %}selected{% endif %}>Harvested ↑</option>
+            <option value="harvested_desc" {% if request.GET.sort == "harvested_desc" %}selected{% endif %}>Harvested ↓</option>
+            <option value="percentage_asc" {% if request.GET.sort == "percentage_asc" %}selected{% endif %}>% Production ↑</option>
+            <option value="percentage_desc" {% if request.GET.sort == "percentage_desc" %}selected{% endif %}>% Production ↓</option> -->
+          </select>
         </div>
         <div class="col-auto">
           <a href="{% url 'ducks:flock-detail' flock.id %}#filter-section" class="btn btn-outline-secondary">

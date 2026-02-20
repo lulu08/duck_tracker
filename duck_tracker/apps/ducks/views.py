@@ -31,6 +31,7 @@ from .forms import FeedConsumedForm
 from .forms import FlockForm
 from .forms import FlockIncomeForm
 from .forms import StatsForm
+from .forms import StatsSortForm
 from .models import Flock
 from .models import Stats
 from .resources import StatsResource
@@ -82,7 +83,7 @@ class FlockDetailView(generic.DetailView):
     model = Flock
     template_name = "ducks/flock_detail.html"
     context_object_name = "flock"
-
+    form_class = StatsSortForm
     resource_class = StatsResource
 
     def apply_filters(self, queryset):
@@ -90,6 +91,7 @@ class FlockDetailView(generic.DetailView):
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
         max_day = self.request.GET.get("day")
+        sort = self.request.GET.get("sort")
 
         if start_date and end_date and end_date < start_date:
             end_date = None
@@ -104,6 +106,15 @@ class FlockDetailView(generic.DetailView):
             max_day = None
         if max_day and not start_date and not end_date:
             queryset = queryset.filter(day__lte=max_day)
+
+        sort_fields = {
+            "day_asc": "day",
+            "day_desc": "-day",
+        }
+        if sort in sort_fields:
+            queryset = queryset.order_by(sort_fields[sort])
+        else:
+            queryset = queryset.order_by("day", "id")
 
         return queryset
 
@@ -375,6 +386,7 @@ class FlockStatsExportView(View):
         start_date = self.request.POST.get("start_date")
         end_date = self.request.POST.get("end_date")
         max_day = self.request.POST.get("day")
+        sort = self.request.POST.get("sort")
 
         if start_date:
             queryset = queryset.filter(date__gte=start_date)
@@ -386,6 +398,13 @@ class FlockStatsExportView(View):
             max_day = None
         if max_day and not start_date and not end_date:
             queryset = queryset.filter(day__lte=max_day)
+
+        sort_fields = {
+            "day_asc": "day",
+            "day_desc": "-day",
+        }
+        if sort in sort_fields:
+            queryset = queryset.order_by(sort_fields[sort]) 
 
         return queryset
 
