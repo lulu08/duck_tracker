@@ -20,28 +20,21 @@
     </div>
     <!-- Filter Controls -->
     <div class="mb-4">
-      <form method="get" class="d-flex gap-2">
+      <form method="get" class="row g-2 align-items-end">
         <!-- NOTE: Watch out for this params exception!!! -->
         {% for key, value in request.GET.items %}
-          {% if key != 'is_culled' %}<input type="hidden" name="{{ key }}" value="{{ value }}" />{% endif %}
+          {% if key != 'is_active' and key != 'sort' and key != 'title' %}<input type="hidden" name="{{ key }}" value="{{ value }}" />{% endif %}
         {% endfor %}
-        <button type="submit"
-                name="is_culled"
-                value="all"
-                class="btn btn-outline-primary btn-sm {% if not request.GET.is_culled %}active{% endif %}">
-          All
-        </button>
-        <button type="submit"
-                name="is_culled"
-                value="false"
-                class="btn btn-outline-primary btn-sm {% if request.GET.is_culled == 'false' %}active{% endif %}">
-          Active
-        </button>
-        <button type="submit"
-                name="is_culled"
-                value="true"
-                class="btn btn-outline-secondary btn-sm {% if request.GET.is_culled == 'true' %}active{% endif %}">
-          Culled
+        
+        {% for field in form %}
+          <div class="col-auto">
+            {{ field.label_tag }}
+            {{ field }}
+          </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-outline-secondary col-auto">
+          <i class="bi bi-funnel"></i> Filter
         </button>
       </form>
     </div>
@@ -53,14 +46,16 @@
       {% with show_chart=request.GET.show_chart|default:"0" %}
         <!-- Toggle Chart Button -->
         <div class="mb-3">
-          <a href="?{% if request.GET.is_culled %}is_culled={{ request.GET.is_culled }}&{% endif %}{% if days %}days={{ days }}&{% endif %}show_chart={% if show_chart == '1' %}0{% else %}1{% endif %}"
-            class="btn btn-outline-secondary btn-sm">
-            {% if show_chart == '1' %}
-              <i class="bi bi-arrows-angle-contract"></i> Hide Chart & Days Filter
-            {% else %}
-              <i class="bi bi-arrows-angle-expand"></i> Show Chart & Days Filter
-            {% endif %}
-          </a>
+          {% with request.GET.urlencode as current_query %}
+            <a href="?{{ current_query|cut:'show_chart=1'|cut:'show_chart=0' }}{% if current_query %}&{% endif %}show_chart={% if show_chart == '1' %}0{% else %}1{% endif %}"
+              class="btn btn-outline-secondary btn-sm">
+              {% if show_chart == '1' %}
+                <i class="bi bi-arrows-angle-contract"></i> Hide Chart & Days Filter
+              {% else %}
+                <i class="bi bi-arrows-angle-expand"></i> Show Chart & Days Filter
+              {% endif %}
+            </a>
+          {% endwith %}
         </div>
         <!-- Collapsible Section -->
         <div class="collapse {% if show_chart == '1' %}show{% endif %}"
@@ -69,8 +64,12 @@
           <form method="get" class="row g-2 align-items-end mb-4">
             <!-- NOTE: Watch out for this params exception!!! -->
             {% for key, value in request.GET.items %}
-              {% if key != 'days' or key != 'show_chart' %}<input type="hidden" name="{{ key }}" value="{{ value }}" />{% endif %}
+              {% if key != 'days' and key != 'show_chart' %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}" />
+              {% endif %}
             {% endfor %}
+              <!-- Keep Chart Open After Submit -->
+            <input type="hidden" name="show_chart" value="1">
             <div class="col-auto">
               <label class="form-label mb-1 small">Compare Days</label>
               <input type="number"

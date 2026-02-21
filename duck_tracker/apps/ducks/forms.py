@@ -82,17 +82,37 @@ class StatsForm(forms.ModelForm):
 
         return cleaned
 
-class StatsSortForm(forms.Form):
-    SORT_CHOICES = (
-        ("date_asc", "Date (Oldest to Newest)"),
-        ("date_desc", "Date (Newest to Oldest)"),
-    )
+class FlockFilterForm(forms.Form):
+    SORT_CHOICES = [
+        ("title_asc", "Name (A-Z)"),
+        ("title_desc", "Name (Z-A)"),
+        ("started_date_asc", "Start Date (Oldest)"),
+        ("started_date_desc", "Start Date (Newest)"),
+    ]
 
+    SORT_IS_ACTIVE_CHOICES = [
+        ("", "All"),
+        ("active", "Active"),
+        ("culled", "Culled"),
+    ]
+    
     sort = forms.ChoiceField(
-        choices=SORT_CHOICES,
         required=False,
         label="Sort By",
-        widget=forms.Select(attrs={"class": "form-select"}),
+        choices=SORT_CHOICES,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+    title = forms.CharField(
+        required=False,
+        label="Flock Name",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Search by name"}),
+    )
+    is_active = forms.ChoiceField(
+        required=False,
+        label="Status",
+        choices=SORT_IS_ACTIVE_CHOICES,
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
 
 class FlockIncomeForm(forms.Form):

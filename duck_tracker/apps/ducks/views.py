@@ -31,7 +31,7 @@ from .forms import FeedConsumedForm
 from .forms import FlockForm
 from .forms import FlockIncomeForm
 from .forms import StatsForm
-from .forms import StatsSortForm
+from .forms import FlockFilterForm
 from .models import Flock
 from .models import Stats
 from .resources import StatsResource
@@ -42,13 +42,38 @@ class FlockListView(generic.ListView):
     model = Flock
     template_name = "ducks/flock_list.html"
     context_object_name = "flocks"
+    form_class = FlockFilterForm
 
     def apply_filters(self, queryset):
-        is_culled = self.request.GET.get("is_culled")
-        if is_culled == "true":
-            queryset = queryset.filter(is_culled=True)
-        elif is_culled == "false":
-            queryset = queryset.filter(is_culled=False)
+        self.form = self.form_class(self.request.GET)
+        if not self.form.is_valid():
+            return queryset  # ignore invalid filters
+        
+        data = self.form.cleaned_data
+
+        title = data.get("title")
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+
+        sort = data.get("sort")
+        sort_fields = {
+            "title_asc": "title",
+            "title_desc": "-title",
+            "started_date_asc": "started_date",
+            "started_date_desc": "-started_date",
+        }        
+        if sort in sort_fields:
+            queryset = queryset.order_by(sort_fields[sort])
+
+        is_active = data.get("is_active")
+        is_active_choices = {
+            "active": True,
+            "culled": False,
+        }
+        if is_active in is_active_choices:
+            queryset = queryset.filter(
+                culled_date__isnull=is_active_choices[is_active],
+            )
         return queryset
 
     def get_queryset(self):
@@ -75,6 +100,7 @@ class FlockListView(generic.ListView):
 
         context["chart_data"] = chart_data
         context["chart_days"] = list(range(1, days + 1))
+        context["form"] = self.form
 
         return context
 
@@ -83,7 +109,6 @@ class FlockDetailView(generic.DetailView):
     model = Flock
     template_name = "ducks/flock_detail.html"
     context_object_name = "flock"
-    form_class = StatsSortForm
     resource_class = StatsResource
 
     def apply_filters(self, queryset):
