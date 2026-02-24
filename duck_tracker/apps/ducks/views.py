@@ -450,8 +450,8 @@ class FlockStatsExportView(View):
             queryset = queryset.filter(day__lte=max_day)
 
         sort_fields = {
-            "day_asc": "day",
-            "day_desc": "-day",
+            "date_asc": "date",
+            "date_desc": "-date",
         }
         if sort in sort_fields:
             queryset = queryset.order_by(sort_fields[sort]) 
