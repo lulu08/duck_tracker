@@ -120,11 +120,17 @@ class FlockDetailView(generic.DetailView):
             max_date=Max("date"),
         )
 
-        self.form = self.form_class(
-            self.request.GET,
-            min_date=date_bounds["min_date"],
-            max_date=date_bounds["max_date"],
-        )
+        if self.request.GET:
+            self.form = self.form_class(
+                self.request.GET,
+                min_date=date_bounds["min_date"],
+                max_date=date_bounds["max_date"],
+            )
+        else:
+            self.form = self.form_class(
+                min_date=date_bounds["min_date"],
+                max_date=date_bounds["max_date"],
+            )
 
         if not self.form.is_valid():
             return queryset
@@ -133,7 +139,7 @@ class FlockDetailView(generic.DetailView):
 
         start_date = data.get("start_date")
         end_date = data.get("end_date")
-        max_day = data.get("day")
+        # max_day = data.get("day")
         sort = data.get("sort")
 
         if start_date and end_date and end_date < start_date:
@@ -141,14 +147,14 @@ class FlockDetailView(generic.DetailView):
 
         if start_date:
             queryset = queryset.filter(date__gte=start_date)
-            max_day = None
+            # max_day = None
 
         if end_date:
             queryset = queryset.filter(date__lte=end_date)
-            max_day = None
+            # max_day = None
 
-        if max_day and not start_date and not end_date:
-            queryset = queryset.filter(day__lte=max_day)
+        # if max_day and not start_date and not end_date:
+        #     queryset = queryset.filter(day__lte=max_day)
 
         sort_fields = {
             "date_asc": "date",

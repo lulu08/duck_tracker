@@ -132,11 +132,11 @@ class StatsFilterForm(forms.Form):
         input_formats=DATE_INPUT_FORMATS,
         widget=forms.DateInput(attrs={"class": "form-control date-input", "type": "date"}),
     )
-    day = forms.IntegerField(
-        required=False,
-        label="Day",
-        widget=forms.NumberInput(attrs={"class": "form-control", "min": "1"}),
-    )
+    # day = forms.IntegerField(
+    #     required=False,
+    #     label="Day",
+    #     widget=forms.NumberInput(attrs={"class": "form-control", "min": "1"}),
+    # )
     sort = forms.ChoiceField(
         required=False,
         label="Sort By",
@@ -152,7 +152,7 @@ class StatsFilterForm(forms.Form):
         # Add IDs
         self.fields["start_date"].widget.attrs["id"] = "start_date"
         self.fields["end_date"].widget.attrs["id"] = "end_date"
-        self.fields["day"].widget.attrs["id"] = "day"
+        # self.fields["day"].widget.attrs["id"] = "day"
         self.fields["sort"].widget.attrs["id"] = "sort"
 
 
@@ -164,22 +164,28 @@ class StatsFilterForm(forms.Form):
         if max_date:
             self.fields["start_date"].widget.attrs["max"] = max_date.strftime(DATE_INPUT_FORMATS[0])
             self.fields["end_date"].widget.attrs["max"] = max_date.strftime(DATE_INPUT_FORMATS[0])
+
+         # ✅ Set initial start_date = min_date (ONLY if no GET param)
+        if not self.is_bound and min_date or max_date:
+            self.initial["start_date"] = min_date
+            self.initial["end_date"] = max_date
+
         # Disable logic
-        data = self.data or None
+        # data = self.data or None
 
-        if data:
-            day_value = data.get("day")
-            start_date_value = data.get("start_date")
-            end_date_value = data.get("end_date")
+        # if data:
+        #     # day_value = data.get("day")
+        #     start_date_value = data.get("start_date")
+        #     end_date_value = data.get("end_date")
 
-            # If day is set → disable date fields
-            if day_value:
-                self.fields["start_date"].widget.attrs["disabled"] = "disabled"
-                self.fields["end_date"].widget.attrs["disabled"] = "disabled"
+        #     # If day is set → disable date fields
+        #     if day_value:
+        #         self.fields["start_date"].widget.attrs["disabled"] = "disabled"
+        #         self.fields["end_date"].widget.attrs["disabled"] = "disabled"
 
-            # If date range is set → disable day field
-            if start_date_value or end_date_value:
-                self.fields["day"].widget.attrs["disabled"] = "disabled"
+        #     # If date range is set → disable day field
+        #     if start_date_value or end_date_value:
+        #         self.fields["day"].widget.attrs["disabled"] = "disabled"
 
 
 class FlockIncomeForm(forms.Form):
