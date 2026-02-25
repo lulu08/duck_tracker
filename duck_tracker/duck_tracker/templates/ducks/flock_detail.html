@@ -394,4 +394,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script src="{% static 'js/scroll_to_top.js' %}"></script>
 
+<!-- <script>
+document.addEventListener("DOMContentLoaded", function () {
+  const filterSection = document.querySelector("#filter-section form");
+  if (!filterSection) return;
+
+  const filterInputs = filterSection.querySelectorAll("input, select");
+  const applyButton = filterSection.querySelector("button[type='submit']");
+
+  // Optional: hide the Apply button since it's no longer needed
+  if (applyButton) {
+    applyButton.style.display = "none";
+  }
+
+  let autoSubmitTimer = null;
+  const AUTO_APPLY_DELAY = 3000; // ⏱ 1.5 seconds (change if you want)
+
+  function scheduleAutoSubmit() {
+    // Clear previous timer
+    if (autoSubmitTimer) {
+      clearTimeout(autoSubmitTimer);
+    }
+
+    // Start new timer
+    autoSubmitTimer = setTimeout(() => {
+      filterSection.submit();
+    }, AUTO_APPLY_DELAY);
+  }
+
+  // Listen to input & change events
+  filterInputs.forEach(input => {
+    input.addEventListener("input", scheduleAutoSubmit);
+    input.addEventListener("change", scheduleAutoSubmit);
+  });
+});
+</script> -->
+
 {% endblock inline_javascript %}

@@ -84,10 +84,10 @@ class StatsForm(forms.ModelForm):
 
 class FlockFilterForm(forms.Form):
     SORT_CHOICES = [
-        ("title_asc", "Name (A-Z)"),
-        ("title_desc", "Name (Z-A)"),
         ("started_date_asc", "Start Date (Oldest)"),
         ("started_date_desc", "Start Date (Newest)"),
+        ("title_asc", "Name (A-Z)"),
+        ("title_desc", "Name (Z-A)"),
     ]
 
     SORT_IS_ACTIVE_CHOICES = [
