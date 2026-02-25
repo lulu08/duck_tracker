@@ -31,7 +31,8 @@ from .forms import FeedConsumedForm
 from .forms import FlockForm
 from .forms import FlockIncomeForm
 from .forms import StatsForm
-from .forms import StatsSortForm
+from .forms import FlockFilterForm
+from .forms import StatsFilterForm
 from .models import Flock
 from .models import Stats
 from .resources import StatsResource
@@ -42,13 +43,38 @@ class FlockListView(generic.ListView):
     model = Flock
     template_name = "ducks/flock_list.html"
     context_object_name = "flocks"
+    form_class = FlockFilterForm
 
     def apply_filters(self, queryset):
-        is_culled = self.request.GET.get("is_culled")
-        if is_culled == "true":
-            queryset = queryset.filter(is_culled=True)
-        elif is_culled == "false":
-            queryset = queryset.filter(is_culled=False)
+        self.form = self.form_class(self.request.GET)
+        if not self.form.is_valid():
+            return queryset  # ignore invalid filters
+        
+        data = self.form.cleaned_data
+
+        title = data.get("title")
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+
+        sort = data.get("sort")
+        sort_fields = {
+            "title_asc": "title",
+            "title_desc": "-title",
+            "started_date_asc": "started_date",
+            "started_date_desc": "-started_date",
+        }        
+        if sort in sort_fields:
+            queryset = queryset.order_by(sort_fields[sort])
+
+        is_active = data.get("is_active")
+        is_active_choices = {
+            "active": True,
+            "culled": False,
+        }
+        if is_active in is_active_choices:
+            queryset = queryset.filter(
+                culled_date__isnull=is_active_choices[is_active],
+            )
         return queryset
 
     def get_queryset(self):
@@ -75,6 +101,7 @@ class FlockListView(generic.ListView):
 
         context["chart_data"] = chart_data
         context["chart_days"] = list(range(1, days + 1))
+        context["form"] = self.form
 
         return context
 
@@ -83,38 +110,61 @@ class FlockDetailView(generic.DetailView):
     model = Flock
     template_name = "ducks/flock_detail.html"
     context_object_name = "flock"
-    form_class = StatsSortForm
     resource_class = StatsResource
+    form_class = StatsFilterForm
 
     def apply_filters(self, queryset):
-        """Apply any filtering based on GET parameters."""
-        start_date = self.request.GET.get("start_date")
-        end_date = self.request.GET.get("end_date")
-        max_day = self.request.GET.get("day")
-        sort = self.request.GET.get("sort")
+        # Get date bounds from FULL queryset
+        date_bounds = queryset.aggregate(
+            min_date=Min("date"),
+            max_date=Max("date"),
+        )
+
+        if self.request.GET:
+            self.form = self.form_class(
+                self.request.GET,
+                min_date=date_bounds["min_date"],
+                max_date=date_bounds["max_date"],
+            )
+        else:
+            self.form = self.form_class(
+                min_date=date_bounds["min_date"],
+                max_date=date_bounds["max_date"],
+            )
+
+        if not self.form.is_valid():
+            return queryset
+
+        data = self.form.cleaned_data
+
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
+        # max_day = data.get("day")
+        sort = data.get("sort")
 
         if start_date and end_date and end_date < start_date:
             end_date = None
 
         if start_date:
             queryset = queryset.filter(date__gte=start_date)
-            # if filtering by start_date, ignore max_day
-            max_day = None
+            # max_day = None
+
         if end_date:
             queryset = queryset.filter(date__lte=end_date)
-            # if filtering by end_date, ignore max_day
-            max_day = None
-        if max_day and not start_date and not end_date:
-            queryset = queryset.filter(day__lte=max_day)
+            # max_day = None
+
+        # if max_day and not start_date and not end_date:
+        #     queryset = queryset.filter(day__lte=max_day)
 
         sort_fields = {
-            "day_asc": "day",
-            "day_desc": "-day",
+            "date_asc": "date",
+            "date_desc": "-date",
         }
+
         if sort in sort_fields:
             queryset = queryset.order_by(sort_fields[sort])
         else:
-            queryset = queryset.order_by("day", "id")
+            queryset = queryset.order_by("date", "id")
 
         return queryset
 
@@ -199,7 +249,7 @@ class FlockDetailView(generic.DetailView):
                 ),
                 "min_date": date_bounds["min_date"],
                 "max_date": date_bounds["max_date"],
-                "form": StatsForm(flock=flock),
+                "form": self.form,
                 "export_form": self.get_export_form(),
             },
         )
@@ -400,8 +450,8 @@ class FlockStatsExportView(View):
             queryset = queryset.filter(day__lte=max_day)
 
         sort_fields = {
-            "day_asc": "day",
-            "day_desc": "-day",
+            "date_asc": "date",
+            "date_desc": "-date",
         }
         if sort in sort_fields:
             queryset = queryset.order_by(sort_fields[sort]) 

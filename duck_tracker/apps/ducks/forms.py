@@ -82,18 +82,111 @@ class StatsForm(forms.ModelForm):
 
         return cleaned
 
-class StatsSortForm(forms.Form):
-    SORT_CHOICES = (
-        ("date_asc", "Date (Oldest to Newest)"),
-        ("date_desc", "Date (Newest to Oldest)"),
-    )
+class FlockFilterForm(forms.Form):
+    SORT_CHOICES = [
+        ("started_date_asc", "Start Date (Oldest)"),
+        ("started_date_desc", "Start Date (Newest)"),
+        ("title_asc", "Name (A-Z)"),
+        ("title_desc", "Name (Z-A)"),
+    ]
 
+    SORT_IS_ACTIVE_CHOICES = [
+        ("", "All"),
+        ("active", "Active"),
+        ("culled", "Culled"),
+    ]
+    
     sort = forms.ChoiceField(
-        choices=SORT_CHOICES,
         required=False,
         label="Sort By",
+        choices=SORT_CHOICES,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+    title = forms.CharField(
+        required=False,
+        label="Flock Name",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Search by name"}),
+    )
+    is_active = forms.ChoiceField(
+        required=False,
+        label="Status",
+        choices=SORT_IS_ACTIVE_CHOICES,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+class StatsFilterForm(forms.Form):
+    SORT_CHOICES = [
+        ("date_asc", "Date (Oldest)"),
+        ("date_desc", "Date (Newest)"),
+    ]
+    start_date = forms.DateField(
+        required=False,
+        label="Start Date",
+        input_formats=DATE_INPUT_FORMATS,
+        widget=forms.DateInput(attrs={"class": "form-control date-input", "type": "date"}),
+    )
+    end_date = forms.DateField(
+        required=False,
+        label="End Date",
+        input_formats=DATE_INPUT_FORMATS,
+        widget=forms.DateInput(attrs={"class": "form-control date-input", "type": "date"}),
+    )
+    # day = forms.IntegerField(
+    #     required=False,
+    #     label="Day",
+    #     widget=forms.NumberInput(attrs={"class": "form-control", "min": "1"}),
+    # )
+    sort = forms.ChoiceField(
+        required=False,
+        label="Sort By",
+        choices=SORT_CHOICES,
         widget=forms.Select(attrs={"class": "form-select"}),
     )
+
+    def __init__(self, *args, **kwargs):
+        min_date = kwargs.pop("min_date", None)
+        max_date = kwargs.pop("max_date", None)
+        super().__init__(*args, **kwargs)
+
+        # Add IDs
+        self.fields["start_date"].widget.attrs["id"] = "start_date"
+        self.fields["end_date"].widget.attrs["id"] = "end_date"
+        # self.fields["day"].widget.attrs["id"] = "day"
+        self.fields["sort"].widget.attrs["id"] = "sort"
+
+
+        # ✅ Add min/max for dates
+        if min_date:
+            self.fields["start_date"].widget.attrs["min"] = min_date.strftime(DATE_INPUT_FORMATS[0])
+            self.fields["end_date"].widget.attrs["min"] = min_date.strftime(DATE_INPUT_FORMATS[0])
+
+        if max_date:
+            self.fields["start_date"].widget.attrs["max"] = max_date.strftime(DATE_INPUT_FORMATS[0])
+            self.fields["end_date"].widget.attrs["max"] = max_date.strftime(DATE_INPUT_FORMATS[0])
+
+         # ✅ Set initial start_date = min_date (ONLY if no GET param)
+        if not self.is_bound and min_date or max_date:
+            self.initial["start_date"] = min_date
+            self.initial["end_date"] = max_date
+
+        # Disable logic
+        # data = self.data or None
+
+        # if data:
+        #     # day_value = data.get("day")
+        #     start_date_value = data.get("start_date")
+        #     end_date_value = data.get("end_date")
+
+        #     # If day is set → disable date fields
+        #     if day_value:
+        #         self.fields["start_date"].widget.attrs["disabled"] = "disabled"
+        #         self.fields["end_date"].widget.attrs["disabled"] = "disabled"
+
+        #     # If date range is set → disable day field
+        #     if start_date_value or end_date_value:
+        #         self.fields["day"].widget.attrs["disabled"] = "disabled"
+
 
 class FlockIncomeForm(forms.Form):
     flock_size = forms.IntegerField(
