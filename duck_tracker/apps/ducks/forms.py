@@ -187,6 +187,16 @@ class StatsFilterForm(forms.Form):
         #     if start_date_value or end_date_value:
         #         self.fields["day"].widget.attrs["disabled"] = "disabled"
 
+        # Add valiation, end date cannot be before start date
+    def clean(self):
+        cleaned = super().clean()
+        start_date = cleaned.get("start_date")
+        end_date = cleaned.get("end_date")
+
+        if start_date and end_date and end_date < start_date:
+            raise forms.ValidationError("End date cannot be before start date.")
+
+        return cleaned
 
 class FlockIncomeForm(forms.Form):
     flock_size = forms.IntegerField(

@@ -91,11 +91,25 @@
   {% if stats %}
     <section id="filter-section" class="mb-4">
       <form method="get" action="#filter-section" class="row g-3 align-items-end">
+      {% if form.non_field_errors %}
+      <div class="col-12">
+        {% for error in form.non_field_errors %}
+          <div class="alert alert-danger alert-dismissible fade show mb-2" role="alert">
+            {{ error }}
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
         {% for field in form %}
           <div class="col-auto">
             <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
             {{ field }}
           </div>
+   
         {% endfor %}
         <div class="col-auto">
           <a href="{% url 'ducks:flock-detail' flock.id %}#filter-section" class="btn btn-outline-secondary">
@@ -274,6 +288,16 @@
 
   endDateInput?.addEventListener('change', () => {
     dayInput.value = '';
+    if (endDateInput.value) {
+      // Set start date max to end date (start date must be before end date)
+      startDateInput.max = endDateInput.value;
+      // Clear start date if it's after the selected end date
+      if (startDateInput.value && startDateInput.value > endDateInput.value) {
+        startDateInput.value = "";
+      }
+    } else {
+      startDateInput.max = "{{ max_date|date:'Y-m-d' }}";
+    }
   });
 
   // Charts rendering
