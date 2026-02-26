@@ -86,6 +86,8 @@ class FlockListView(generic.ListView):
 
         days = int(self.request.GET.get("days", 30))
         context["days"] = days
+        max_day = self.get_queryset().aggregate(max_day=Max("stats__day"))["max_day"] or 0
+        context["max_days"] = max_day
 
         chart_data = []
 
